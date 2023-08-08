@@ -5,6 +5,7 @@
 #include "col2im.h"
 #include "blas.h"
 #include "gemm.h"
+#include "format.h"
 #include <stdio.h>
 #include <time.h>
 
@@ -29,13 +30,17 @@ void binarize_weights(float *weights, int n, int size, float *binary)
 {
     int i, f;
     for(f = 0; f < n; ++f){
-        float mean = 0;
+        //float mean = 0;
+        float mean = ZERO;
         for(i = 0; i < size; ++i){
-            mean += fabs(weights[f*size + i]);
+            //mean += fabs(weights[f*size + i]);
+            mean = add(mean, fabs(weights[f*size + i]));
         }
-        mean = mean / size;
+        //mean = mean / size;
+        mean = div(mean, size);
         for(i = 0; i < size; ++i){
-            binary[f*size + i] = (weights[f*size + i] > 0) ? mean : -mean;
+            //binary[f*size + i] = (weights[f*size + i] > 0) ? mean : -mean;
+            binary[f*size + i] = gt(weights[f*size + i], ZERO) ? mean : neg(mean);
         }
     }
 }
@@ -44,7 +49,8 @@ void binarize_cpu(float *input, int n, float *binary)
 {
     int i;
     for(i = 0; i < n; ++i){
-        binary[i] = (input[i] > 0) ? 1 : -1;
+        //binary[i] = (input[i] > 0) ? 1 : -1;
+        binary[i] = gt(input[i], ZERO) ? ONE : neg(ONE);
     }
 }
 
@@ -52,13 +58,17 @@ void binarize_input(float *input, int n, int size, float *binary)
 {
     int i, s;
     for(s = 0; s < size; ++s){
-        float mean = 0;
+        //float mean = 0;
+        float mean = ZERO;
         for(i = 0; i < n; ++i){
-            mean += fabs(input[i*size + s]);
+            //mean += fabs(input[i*size + s]);
+            mean = add(mean, fabs(input[i*size + s]));
         }
-        mean = mean / n;
+        //mean = mean / n;
+        mean = div(mean, n);
         for(i = 0; i < n; ++i){
-            binary[i*size + s] = (input[i*size + s] > 0) ? mean : -mean;
+            //binary[i*size + s] = (input[i*size + s] > 0) ? mean : -mean;
+            binary[i*size + s] = gt(input[i*size + s], ZERO) ? mean : neg(mean);
         }
     }
 }
@@ -202,11 +212,12 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.nbiases = n;
 
     // float scale = 1./sqrt(size*size*c);
-    float scale = sqrt(2./(size*size*c/l.groups));
+    //float scale = sqrt(2./(size*size*c/l.groups));
+    float scale = sqrt(div(TWO, mul(float2type(size), mul(float2type(size), div(float2type(c), float2type(l.groups))))));
     //printf("convscale %f\n", scale);
     //scale = .02;
     //for(i = 0; i < c*n*size*size; ++i) l.weights[i] = scale*rand_uniform(-1, 1);
-    for(i = 0; i < l.nweights; ++i) l.weights[i] = scale*rand_normal();
+    for(i = 0; i < l.nweights; ++i) l.weights[i] = mul(scale, float2type(rand_normal()));
     int out_w = convolutional_out_width(l);
     int out_h = convolutional_out_height(l);
     l.out_h = out_h;
@@ -235,7 +246,8 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
         l.scales = calloc(n, sizeof(float));
         l.scale_updates = calloc(n, sizeof(float));
         for(i = 0; i < n; ++i){
-            l.scales[i] = 1;
+            //l.scales[i] = 1;
+            l.scales[i] = ONE;
         }
 
         l.mean = calloc(n, sizeof(float));
@@ -331,14 +343,20 @@ void denormalize_convolutional_layer(convolutional_layer l)
 {
     int i, j;
     for(i = 0; i < l.n; ++i){
-        float scale = l.scales[i]/sqrt(l.rolling_variance[i] + .00001);
+        //float scale = l.scales[i]/sqrt(l.rolling_variance[i] + .00001);
+        float scale = div(l.scales[i], sqrt(add(l.rolling_variance[i], float2type(.00001))));
         for(j = 0; j < l.c/l.groups*l.size*l.size; ++j){
-            l.weights[i*l.c/l.groups*l.size*l.size + j] *= scale;
+            //l.weights[i*l.c/l.groups*l.size*l.size + j] *= scale;
+            l.weights[i*l.c/l.groups*l.size*l.size + j] = mul(l.weights[i*l.c/l.groups*l.size*l.size + j], scale);
         }
-        l.biases[i] -= l.rolling_mean[i] * scale;
-        l.scales[i] = 1;
-        l.rolling_mean[i] = 0;
-        l.rolling_variance[i] = 1;
+        //l.biases[i] -= l.rolling_mean[i] * scale;
+        l.biases[i] = sub(l.biases[i], mul(l.rolling_mean[i], scale));
+        //l.scales[i] = 1;
+        l.scales[i] = ONE;
+        //l.rolling_mean[i] = 0;
+        l.rolling_mean[i] = ZERO;
+        //l.rolling_variance[i] = 1;
+        l.rolling_variance[i] = ONE;
     }
 }
 
@@ -414,7 +432,8 @@ void add_bias(float *output, float *biases, int batch, int n, int size)
     for(b = 0; b < batch; ++b){
         for(i = 0; i < n; ++i){
             for(j = 0; j < size; ++j){
-                output[(b*n + i)*size + j] += biases[i];
+                //output[(b*n + i)*size + j] += biases[i];
+                output[(b*n + i)*size + j] = add(output[(b*n + i)*size + j], biases[i]);
             }
         }
     }
@@ -426,7 +445,8 @@ void scale_bias(float *output, float *scales, int batch, int n, int size)
     for(b = 0; b < batch; ++b){
         for(i = 0; i < n; ++i){
             for(j = 0; j < size; ++j){
-                output[(b*n + i)*size + j] *= scales[i];
+                //output[(b*n + i)*size + j] *= scales[i];
+                output[(b*n + i)*size + j] = mul(output[(b*n + i)*size + j], scales[i]);
             }
         }
     }
@@ -437,7 +457,8 @@ void backward_bias(float *bias_updates, float *delta, int batch, int n, int size
     int i,b;
     for(b = 0; b < batch; ++b){
         for(i = 0; i < n; ++i){
-            bias_updates[i] += sum_array(delta+size*(i+b*n), size);
+            //bias_updates[i] += sum_array(delta+size*(i+b*n), size);
+            bias_updates[i] = add(bias_updates[i], sum_array(delta+size*(i+b*n), size));
         }
     }
 }
@@ -537,7 +558,8 @@ void backward_convolutional_layer(convolutional_layer l, network net)
 
 void update_convolutional_layer(convolutional_layer l, update_args a)
 {
-    float learning_rate = a.learning_rate*l.learning_rate_scale;
+    //float learning_rate = a.learning_rate*l.learning_rate_scale;
+    float learning_rate = mul(a.learning_rate, l.learning_rate_scale);
     float momentum = a.momentum;
     float decay = a.decay;
     int batch = a.batch;
@@ -583,7 +605,8 @@ void rescale_weights(convolutional_layer l, float scale, float trans)
         if (im.c == 3) {
             scale_image(im, scale);
             float sum = sum_array(im.data, im.w*im.h*im.c);
-            l.biases[i] += sum*trans;
+            //l.biases[i] += sum*trans;
+            l.biases[i] = add(l.biases[i], mul(sum, trans));
         }
     }
 }

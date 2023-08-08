@@ -1,6 +1,7 @@
 #include "convolutional_layer.h"
 #include "batchnorm_layer.h"
 #include "blas.h"
+#include "format.h"
 #include <stdio.h>
 
 layer make_batchnorm_layer(int batch, int w, int h, int c)
@@ -23,7 +24,7 @@ layer make_batchnorm_layer(int batch, int w, int h, int c)
     l.bias_updates = calloc(c, sizeof(float));
     int i;
     for(i = 0; i < c; ++i){
-        l.scales[i] = 1;
+        l.scales[i] = ONE;
     }
 
     l.mean = calloc(c, sizeof(float));
@@ -77,10 +78,12 @@ void backward_scale_cpu(float *x_norm, float *delta, int batch, int n, int size,
         for(b = 0; b < batch; ++b){
             for(i = 0; i < size; ++i){
                 int index = i + size*(f + n*b);
-                sum += delta[index] * x_norm[index];
+                //sum += delta[index] * x_norm[index];
+                sum = add(sum, mul(delta[index], x_norm[index]));
             }
         }
-        scale_updates[f] += sum;
+        //scale_updates[f] += sum;
+        scale_updates[f] = add(scale_updates[f], sum);
     }
 }
 
@@ -93,10 +96,12 @@ void mean_delta_cpu(float *delta, float *variance, int batch, int filters, int s
         for (j = 0; j < batch; ++j) {
             for (k = 0; k < spatial; ++k) {
                 int index = j*filters*spatial + i*spatial + k;
-                mean_delta[i] += delta[index];
+                //mean_delta[i] += delta[index];
+                mean_delta[i] = add(mean_delta[i], delta[index]);
             }
         }
-        mean_delta[i] *= (-1./sqrt(variance[i] + .00001f));
+        //mean_delta[i] *= (-1./sqrt(variance[i] + .00001f));
+        mean_delta[i] = mul(mean_delta[i], neg(ONE)/sqrt(add(variance[i], float2type(.00001f))));
     }
 }
 void  variance_delta_cpu(float *x, float *delta, float *mean, float *variance, int batch, int filters, int spatial, float *variance_delta)
@@ -108,10 +113,12 @@ void  variance_delta_cpu(float *x, float *delta, float *mean, float *variance, i
         for(j = 0; j < batch; ++j){
             for(k = 0; k < spatial; ++k){
                 int index = j*filters*spatial + i*spatial + k;
-                variance_delta[i] += delta[index]*(x[index] - mean[i]);
+                //variance_delta[i] += delta[index]*(x[index] - mean[i]);
+                variance_delta[i] = add(variance_delta[i], mul(delta[index], sub(x[index], mean[i])));
             }
         }
-        variance_delta[i] *= -.5 * pow(variance[i] + .00001f, (float)(-3./2.));
+        //variance_delta[i] *= -.5 * pow(variance[i] + .00001f, (float)(-3./2.));
+        variance_delta[i] = mul(variance_delta[i], mul(float2type(-.5), pow(add(variance[i], float2type(.00001f)), float2type((float)(-3./2.)))));
     }
 }
 void normalize_delta_cpu(float *x, float *mean, float *variance, float *mean_delta, float *variance_delta, int batch, int filters, int spatial, float *delta)
@@ -121,7 +128,8 @@ void normalize_delta_cpu(float *x, float *mean, float *variance, float *mean_del
         for(f = 0; f < filters; ++f){
             for(k = 0; k < spatial; ++k){
                 int index = j*filters*spatial + f*spatial + k;
-                delta[index] = delta[index] * 1./(sqrt(variance[f] + .00001f)) + variance_delta[f] * 2. * (x[index] - mean[f]) / (spatial * batch) + mean_delta[f]/(spatial*batch);
+                //delta[index] = delta[index] * 1./(sqrt(variance[f] + .00001f)) + variance_delta[f] * 2. * (x[index] - mean[f]) / (spatial * batch) + mean_delta[f]/(spatial*batch);
+                delta[index] = add(mul(delta[index], div(ONE, (sqrt(add(variance[f], float2type(.00001f)))))), add(mul(variance_delta[f], mul(TWO, div(sub(x[index], mean[f]), mul(float2type(spatial), batch)))), div(mean_delta[f], mul(float2type(spatial), batch))));
             }
         }
     }

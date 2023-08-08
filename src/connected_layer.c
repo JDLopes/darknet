@@ -5,6 +5,7 @@
 #include "cuda.h"
 #include "blas.h"
 #include "gemm.h"
+#include "format.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -43,13 +44,16 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
     l.update = update_connected_layer;
 
     //float scale = 1./sqrt(inputs);
-    float scale = sqrt(2./inputs);
+    //float scale = sqrt(2./inputs);
+    float scale = sqrt(div(TWO, float2type(inputs)));
     for(i = 0; i < outputs*inputs; ++i){
-        l.weights[i] = scale*rand_uniform(-1, 1);
+        //l.weights[i] = scale*rand_uniform(-1, 1);
+        l.weights[i] = mul(scale, float2type(rand_uniform(-1, 1)));
     }
 
     for(i = 0; i < outputs; ++i){
-        l.biases[i] = 0;
+        //l.biases[i] = 0;
+        l.biases[i] = ZERO;
     }
 
     if(adam){
@@ -64,7 +68,8 @@ layer make_connected_layer(int batch, int inputs, int outputs, ACTIVATION activa
         l.scales = calloc(outputs, sizeof(float));
         l.scale_updates = calloc(outputs, sizeof(float));
         for(i = 0; i < outputs; ++i){
-            l.scales[i] = 1;
+            //l.scales[i] = 1;
+            l.scales[i] = ONE;
         }
 
         l.mean = calloc(outputs, sizeof(float));
@@ -200,14 +205,20 @@ void denormalize_connected_layer(layer l)
 {
     int i, j;
     for(i = 0; i < l.outputs; ++i){
-        float scale = l.scales[i]/sqrt(l.rolling_variance[i] + .000001);
+        //float scale = l.scales[i]/sqrt(l.rolling_variance[i] + .000001);
+        float scale = div(l.scales[i], sqrt(add(l.rolling_variance[i], float2type(.000001))));
         for(j = 0; j < l.inputs; ++j){
-            l.weights[i*l.inputs + j] *= scale;
+            //l.weights[i*l.inputs + j] *= scale;
+            l.weights[i*l.inputs + j] = mul(l.weights[i*l.inputs + j], scale);
         }
-        l.biases[i] -= l.rolling_mean[i] * scale;
-        l.scales[i] = 1;
-        l.rolling_mean[i] = 0;
-        l.rolling_variance[i] = 1;
+        //l.biases[i] -= l.rolling_mean[i] * scale;
+        l.biases[i] = sub(l.biases[i], mul(l.rolling_mean[i], scale));
+        //l.scales[i] = 1;
+        l.scales[i] = ONE;
+        //l.rolling_mean[i] = 0;
+        l.rolling_mean[i] = ZERO;
+        //l.rolling_variance[i] = 1;
+        l.rolling_variance[i] = ONE;
     }
 }
 

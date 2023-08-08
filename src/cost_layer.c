@@ -118,10 +118,13 @@ void push_cost_layer(cost_layer l)
 int float_abs_compare (const void * a, const void * b)
 {
     float fa = *(const float*) a;
-    if(fa < 0) fa = -fa;
+    //if(fa < 0) fa = -fa;
+    if(lt(fa, ZERO)) fa = neg(fa);
     float fb = *(const float*) b;
-    if(fb < 0) fb = -fb;
-    return (fa > fb) - (fa < fb);
+    //if(fb < 0) fb = -fb;
+    if(lt(fb, ZERO)) fb = neg(fb);
+    //return (fa > fb) - (fa < fb);
+    return gt(fa, fb) - lt(fa, fb);
 }
 
 void forward_cost_layer_gpu(cost_layer l, network net)

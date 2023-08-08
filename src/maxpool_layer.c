@@ -1,5 +1,6 @@
 #include "maxpool_layer.h"
 #include "cuda.h"
+#include "format.h"
 #include <stdio.h>
 
 image get_maxpool_image(maxpool_layer l)
@@ -91,7 +92,7 @@ void forward_maxpool_layer(const maxpool_layer l, network net)
             for(i = 0; i < h; ++i){
                 for(j = 0; j < w; ++j){
                     int out_index = j + w*(i + h*(k + c*b));
-                    float max = -FLT_MAX;
+                    float max = float2type(-FLT_MAX);
                     int max_i = -1;
                     for(n = 0; n < l.size; ++n){
                         for(m = 0; m < l.size; ++m){
@@ -101,8 +102,10 @@ void forward_maxpool_layer(const maxpool_layer l, network net)
                             int valid = (cur_h >= 0 && cur_h < l.h &&
                                          cur_w >= 0 && cur_w < l.w);
                             float val = (valid != 0) ? net.input[index] : -FLT_MAX;
-                            max_i = (val > max) ? index : max_i;
-                            max   = (val > max) ? val   : max;
+                            //max_i = (val > max) ? index : max_i;
+                            //max   = (val > max) ? val   : max;
+                            max_i = gt(val, max) ? index : max_i;
+                            max   = gt(val, max) ? val   : max;
                         }
                     }
                     l.output[out_index] = max;
@@ -121,7 +124,8 @@ void backward_maxpool_layer(const maxpool_layer l, network net)
     int c = l.c;
     for(i = 0; i < h*w*c*l.batch; ++i){
         int index = l.indexes[i];
-        net.delta[index] += l.delta[i];
+        //net.delta[index] += l.delta[i];
+        net.delta[index] = add(net.delta[index], l.delta[i]);
     }
 }
 

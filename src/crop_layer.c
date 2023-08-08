@@ -1,5 +1,6 @@
 #include "crop_layer.h"
 #include "cuda.h"
+#include "format.h"
 #include <stdio.h>
 
 image get_crop_image(crop_layer l)
@@ -22,7 +23,8 @@ crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int 
     l.h = h;
     l.w = w;
     l.c = c;
-    l.scale = (float)crop_height / h;
+    //l.scale = (float)crop_height / h;
+    l.scale = div(float2type((float)crop_height), float2type(h));
     l.flip = flip;
     l.angle = angle;
     l.saturation = saturation;
@@ -72,11 +74,15 @@ void forward_crop_layer(const crop_layer l, network net)
     int flip = (l.flip && rand()%2);
     int dh = rand()%(l.h - l.out_h + 1);
     int dw = rand()%(l.w - l.out_w + 1);
-    float scale = 2;
-    float trans = -1;
+    //float scale = 2;
+    float scale = TWO;
+    //float trans = -1;
+    float trans = neg(ONE);
     if(l.noadjust){
-        scale = 1;
-        trans = 0;
+        //scale = 1;
+        scale = ONE;
+        //trans = 0;
+        trans = ZERO;
     }
     if(!net.train){
         flip = 0;
@@ -94,7 +100,8 @@ void forward_crop_layer(const crop_layer l, network net)
                     }
                     row = i + dh;
                     index = col+l.w*(row+l.h*(c + l.c*b)); 
-                    l.output[count++] = net.input[index]*scale + trans;
+                    //l.output[count++] = net.input[index]*scale + trans;
+                    l.output[count++] = add(mul(net.input[index], scale), trans);
                 }
             }
         }

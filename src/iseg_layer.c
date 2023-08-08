@@ -4,6 +4,7 @@
 #include "box.h"
 #include "cuda.h"
 #include "utils.h"
+#include "format.h"
 
 #include <stdio.h>
 #include <assert.h>
@@ -96,7 +97,8 @@ void forward_iseg_layer(const layer l, network net)
         for(i = 0; i < l.classes; ++i){
             for(k = 0; k < l.w*l.h; ++k){
                 int index = b*l.outputs + i*l.w*l.h + k;
-                l.delta[index] = 0 - l.output[index];
+                //l.delta[index] = 0 - l.output[index];
+                l.delta[index] = sub(ZERO, l.output[index]);
             }
         }
 
@@ -104,7 +106,8 @@ void forward_iseg_layer(const layer l, network net)
         for(i = 0; i < ids; ++i){
             for(k = 0; k < l.w*l.h; ++k){
                 int index = b*l.outputs + (i+l.classes)*l.w*l.h + k;
-                l.delta[index] = .1 * (0 - l.output[index]);
+                //l.delta[index] = .1 * (0 - l.output[index]);
+                l.delta[index] = mul(float2type(.1), sub(ZERO, l.output[index]));
             }
         }
 

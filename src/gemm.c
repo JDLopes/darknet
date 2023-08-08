@@ -1,6 +1,7 @@
 #include "gemm.h"
 #include "utils.h"
 #include "cuda.h"
+#include "format.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -16,11 +17,13 @@ void gemm_bin(int M, int N, int K, float ALPHA,
             char A_PART = A[i*lda+k];
             if(A_PART){
                 for(j = 0; j < N; ++j){
-                    C[i*ldc+j] += B[k*ldb+j];
+                    //C[i*ldc+j] += B[k*ldb+j];
+                    C[i*ldc+j] = add(C[i*ldc+j], B[k*ldb+j]);
                 }
             } else {
                 for(j = 0; j < N; ++j){
-                    C[i*ldc+j] -= B[k*ldb+j];
+                    //C[i*ldc+j] -= B[k*ldb+j];
+                    C[i*ldc+j] = sub(C[i*ldc+j], B[k*ldb+j]);
                 }
             }
         }
@@ -32,7 +35,8 @@ float *random_matrix(int rows, int cols)
     int i;
     float *m = calloc(rows*cols, sizeof(float));
     for(i = 0; i < rows*cols; ++i){
-        m[i] = (float)rand()/RAND_MAX;
+        //m[i] = (float)rand()/RAND_MAX;
+        m[i] = float2type((float)rand()/RAND_MAX);
     }
     return m;
 }
@@ -80,9 +84,11 @@ void gemm_nn(int M, int N, int K, float ALPHA,
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(k = 0; k < K; ++k){
-            register float A_PART = ALPHA*A[i*lda+k];
+            //register float A_PART = ALPHA*A[i*lda+k];
+            register float A_PART = mul(ALPHA, A[i*lda+k]);
             for(j = 0; j < N; ++j){
-                C[i*ldc+j] += A_PART*B[k*ldb+j];
+                //C[i*ldc+j] += A_PART*B[k*ldb+j];
+                C[i*ldc+j] = add(C[i*ldc+j], mul(A_PART, B[k*ldb+j]));
             }
         }
     }
@@ -97,11 +103,14 @@ void gemm_nt(int M, int N, int K, float ALPHA,
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
-            register float sum = 0;
+            //register float sum = 0;
+            register float sum = ZERO;
             for(k = 0; k < K; ++k){
-                sum += ALPHA*A[i*lda+k]*B[j*ldb + k];
+                //sum += ALPHA*A[i*lda+k]*B[j*ldb + k];
+                sum = add(sum, mul(ALPHA, mul(A[i*lda+k], B[j*ldb + k])));
             }
-            C[i*ldc+j] += sum;
+            //C[i*ldc+j] += sum;
+            C[i*ldc+j] = add(C[i*ldc+j], sum);
         }
     }
 }
@@ -115,9 +124,11 @@ void gemm_tn(int M, int N, int K, float ALPHA,
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(k = 0; k < K; ++k){
-            register float A_PART = ALPHA*A[k*lda+i];
+            //register float A_PART = ALPHA*A[k*lda+i];
+            register float A_PART = mul(ALPHA, A[k*lda+i]);
             for(j = 0; j < N; ++j){
-                C[i*ldc+j] += A_PART*B[k*ldb+j];
+                //C[i*ldc+j] += A_PART*B[k*ldb+j];
+                C[i*ldc+j] = add(C[i*ldc+j], mul(A_PART, B[k*ldb+j]));
             }
         }
     }
@@ -132,11 +143,14 @@ void gemm_tt(int M, int N, int K, float ALPHA,
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
-            register float sum = 0;
+            //register float sum = 0;
+            register float sum = ZERO;
             for(k = 0; k < K; ++k){
-                sum += ALPHA*A[i+k*lda]*B[k+j*ldb];
+                //sum += ALPHA*A[i+k*lda]*B[k+j*ldb];
+                sum = add(sum, mul(ALPHA, mul(A[i+k*lda], B[k+j*ldb])));
             }
-            C[i*ldc+j] += sum;
+            //C[i*ldc+j] += sum;
+            C[i*ldc+j] = add(C[i*ldc+j], sum);
         }
     }
 }
@@ -152,7 +166,8 @@ void gemm_cpu(int TA, int TB, int M, int N, int K, float ALPHA,
     int i, j;
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
-            C[i*ldc + j] *= BETA;
+            //C[i*ldc + j] *= BETA;
+            C[i*ldc + j] = mul(C[i*ldc + j], BETA);
         }
     }
     if(!TA && !TB)

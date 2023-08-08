@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "image.h"
 #include "cuda.h"
+#include "format.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -1435,9 +1436,11 @@ data load_cifar10_data(char *filename)
         unsigned char bytes[3073];
         fread(bytes, 1, 3073, fp);
         int class = bytes[0];
-        y.vals[i][class] = 1;
+        //y.vals[i][class] = 1;
+        y.vals[i][class] = ONE;
         for(j = 0; j < X.cols; ++j){
-            X.vals[i][j] = (double)bytes[j+1];
+            //X.vals[i][j] = (double)bytes[j+1];
+            X.vals[i][j] = float2type((double)bytes[j+1]);
         }
     }
     scale_data_rows(d, 1./255);
@@ -1469,11 +1472,14 @@ void get_next_batch(data d, int n, int offset, float *X, float *y)
 void smooth_data(data d)
 {
     int i, j;
-    float scale = 1. / d.y.cols;
-    float eps = .1;
+    //float scale = 1. / d.y.cols;
+    float scale = div(ONE, float2type(d.y.cols));
+    //float eps = .1;
+    float eps = float2type(.1);
     for(i = 0; i < d.y.rows; ++i){
         for(j = 0; j < d.y.cols; ++j){
-            d.y.vals[i][j] = eps * scale + (1-eps) * d.y.vals[i][j];
+            //d.y.vals[i][j] = eps * scale + (1-eps) * d.y.vals[i][j];
+            d.y.vals[i][j] = add(mul(eps, scale), mul(sub(ONE, eps), d.y.vals[i][j]));
         }
     }
 }
@@ -1498,9 +1504,11 @@ data load_all_cifar10()
             unsigned char bytes[3073];
             fread(bytes, 1, 3073, fp);
             int class = bytes[0];
-            y.vals[i+b*10000][class] = 1;
+            //y.vals[i+b*10000][class] = 1;
+            y.vals[i+b*10000][class] = ONE;
             for(j = 0; j < X.cols; ++j){
-                X.vals[i+b*10000][j] = (double)bytes[j+1];
+                //X.vals[i+b*10000][j] = (double)bytes[j+1];
+                X.vals[i+b*10000][j] = float2type((double)bytes[j+1]);
             }
         }
         fclose(fp);
@@ -1531,12 +1539,16 @@ data load_go(char *filename)
         char *board = fgetl(fp);
 
         int index = row*19 + col;
-        y.vals[count][index] = 1;
+        //y.vals[count][index] = 1;
+        y.vals[count][index] = ONE;
 
         for(i = 0; i < 19*19; ++i){
-            float val = 0;
-            if(board[i] == '1') val = 1;
-            else if(board[i] == '2') val = -1;
+            //float val = 0;
+            float val = ZERO;
+            //if(board[i] == '1') val = 1;
+            if(board[i] == '1') val = ONE;
+            //else if(board[i] == '2') val = -1;
+            else if(board[i] == '2') val = neg(ONE);
             X.vals[count][i] = val;
         }
         ++count;

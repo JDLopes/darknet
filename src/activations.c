@@ -1,4 +1,5 @@
 #include "activations.h"
+#include "format.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -144,7 +145,8 @@ void gradient_array(const float *x, const int n, const ACTIVATION a, float *delt
 {
     int i;
     for(i = 0; i < n; ++i){
-        delta[i] *= gradient(x[i], a);
+        //delta[i] *= gradient(x[i], a);
+        delta[i] = mul(delta[i], gradient(x[i], a));
     }
 } 
 

@@ -1,6 +1,7 @@
 #include "dropout_layer.h"
 #include "utils.h"
 #include "cuda.h"
+#include "format.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -13,7 +14,8 @@ dropout_layer make_dropout_layer(int batch, int inputs, float probability)
     l.outputs = inputs;
     l.batch = batch;
     l.rand = calloc(inputs*batch, sizeof(float));
-    l.scale = 1./(1.-probability);
+    //l.scale = 1./(1.-probability);
+    l.scale = div(ONE, sub(ONE, probability));
     l.forward = forward_dropout_layer;
     l.backward = backward_dropout_layer;
     #ifdef GPU
@@ -40,10 +42,13 @@ void forward_dropout_layer(dropout_layer l, network net)
     int i;
     if (!net.train) return;
     for(i = 0; i < l.batch * l.inputs; ++i){
-        float r = rand_uniform(0, 1);
+        //float r = rand_uniform(0, 1);
+        float r = float2type(rand_uniform(0, 1));
         l.rand[i] = r;
-        if(r < l.probability) net.input[i] = 0;
-        else net.input[i] *= l.scale;
+        //if(r < l.probability) net.input[i] = 0;
+        if(lt(r, l.probability)) net.input[i] = ZERO;
+        //else net.input[i] *= l.scale;
+        else net.input[i] = mul(net.input[i], l.scale);
     }
 }
 
@@ -53,8 +58,10 @@ void backward_dropout_layer(dropout_layer l, network net)
     if(!net.delta) return;
     for(i = 0; i < l.batch * l.inputs; ++i){
         float r = l.rand[i];
-        if(r < l.probability) net.delta[i] = 0;
-        else net.delta[i] *= l.scale;
+        //if(r < l.probability) net.delta[i] = 0;
+        if(lt(r, l.probability)) net.delta[i] = ZERO;
+        //else net.delta[i] *= l.scale;
+        else net.delta[i] = mul(net.delta[i], l.scale);
     }
 }
 

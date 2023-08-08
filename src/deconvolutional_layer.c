@@ -6,6 +6,7 @@
 #include "col2im.h"
 #include "blas.h"
 #include "gemm.h"
+#include "format.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -18,11 +19,13 @@ static size_t get_workspace_size(layer l){
 void bilinear_init(layer l)
 {
     int i,j,f;
-    float center = (l.size-1) / 2.;
+    //float center = (l.size-1) / 2.;
+    float center = div(sub(float2type(l.size), ONE), TWO);
     for(f = 0; f < l.n; ++f){
         for(j = 0; j < l.size; ++j){
             for(i = 0; i < l.size; ++i){
-                float val = (1 - fabs(i - center)) * (1 - fabs(j - center));
+                //float val = (1 - fabs(i - center)) * (1 - fabs(j - center));
+                float val = mul(sub(ONE, fabs(sub(float2type(i), center))), sub(ONE, fabs(sub(float2type(j), center))));
                 int c = f%l.c;
                 int ind = f*l.size*l.size*l.c + c*l.size*l.size + j*l.size + i;
                 l.weights[ind] = val;
@@ -56,11 +59,14 @@ layer make_deconvolutional_layer(int batch, int h, int w, int c, int n, int size
     l.bias_updates = calloc(n, sizeof(float));
     //float scale = n/(size*size*c);
     //printf("scale: %f\n", scale);
-    float scale = .02;
-    for(i = 0; i < c*n*size*size; ++i) l.weights[i] = scale*rand_normal();
+    //float scale = .02;
+    float scale = float2type(.02);
+    //for(i = 0; i < c*n*size*size; ++i) l.weights[i] = scale*rand_normal();
+    for(i = 0; i < c*n*size*size; ++i) l.weights[i] = mul(scale, float2type(rand_normal()));
     //bilinear_init(l);
     for(i = 0; i < n; ++i){
-        l.biases[i] = 0;
+        //l.biases[i] = 0;
+        l.biases[i] = ZERO;
     }
     l.pad = padding;
 
@@ -70,7 +76,8 @@ layer make_deconvolutional_layer(int batch, int h, int w, int c, int n, int size
     l.outputs = l.out_w * l.out_h * l.out_c;
     l.inputs = l.w * l.h * l.c;
 
-    scal_cpu(l.nweights, (float)l.out_w*l.out_h/(l.w*l.h), l.weights, 1);
+    //scal_cpu(l.nweights, (float)l.out_w*l.out_h/(l.w*l.h), l.weights, 1);
+    scal_cpu(l.nweights, div(mul(float2type(l.out_w), float2type(l.out_h)), mul(float2type(l.w), float2type(l.h))), l.weights, 1);
 
     l.output = calloc(l.batch*l.outputs, sizeof(float));
     l.delta  = calloc(l.batch*l.outputs, sizeof(float));
@@ -85,7 +92,8 @@ layer make_deconvolutional_layer(int batch, int h, int w, int c, int n, int size
         l.scales = calloc(n, sizeof(float));
         l.scale_updates = calloc(n, sizeof(float));
         for(i = 0; i < n; ++i){
-            l.scales[i] = 1;
+            //l.scales[i] = 1;
+            l.scales[i] = ONE;
         }
 
         l.mean = calloc(n, sizeof(float));
@@ -169,14 +177,20 @@ void denormalize_deconvolutional_layer(layer l)
 {
     int i, j;
     for(i = 0; i < l.n; ++i){
-        float scale = l.scales[i]/sqrt(l.rolling_variance[i] + .00001);
+        //float scale = l.scales[i]/sqrt(l.rolling_variance[i] + .00001);
+        float scale = div(l.scales[i], sqrt(add(l.rolling_variance[i], float2type(.00001))));
         for(j = 0; j < l.c*l.size*l.size; ++j){
-            l.weights[i*l.c*l.size*l.size + j] *= scale;
+            //l.weights[i*l.c*l.size*l.size + j] *= scale;
+            l.weights[i*l.c*l.size*l.size + j] = mul(l.weights[i*l.c*l.size*l.size + j], scale);
         }
-        l.biases[i] -= l.rolling_mean[i] * scale;
-        l.scales[i] = 1;
-        l.rolling_mean[i] = 0;
-        l.rolling_variance[i] = 1;
+        //l.biases[i] -= l.rolling_mean[i] * scale;
+        l.biases[i] = sub(l.biases[i], mul(l.rolling_mean[i], scale));
+        //l.scales[i] = 1;
+        l.scales[i] = ONE;
+        //l.rolling_mean[i] = 0;
+        l.rolling_mean[i] = ZERO;
+        //l.rolling_variance[i] = 1;
+        l.rolling_variance[i] = ONE;
     }
 }
 
@@ -289,22 +303,27 @@ void backward_deconvolutional_layer(layer l, network net)
 
 void update_deconvolutional_layer(layer l, update_args a)
 {
-    float learning_rate = a.learning_rate*l.learning_rate_scale;
+    //float learning_rate = a.learning_rate*l.learning_rate_scale;
+    float learning_rate = mul(a.learning_rate, l.learning_rate_scale);
     float momentum = a.momentum;
     float decay = a.decay;
     int batch = a.batch;
 
     int size = l.size*l.size*l.c*l.n;
-    axpy_cpu(l.n, learning_rate/batch, l.bias_updates, 1, l.biases, 1);
+    //axpy_cpu(l.n, learning_rate/batch, l.bias_updates, 1, l.biases, 1);
+    axpy_cpu(l.n, div(learning_rate, float2type(batch)), l.bias_updates, 1, l.biases, 1);
     scal_cpu(l.n, momentum, l.bias_updates, 1);
 
     if(l.scales){
-        axpy_cpu(l.n, learning_rate/batch, l.scale_updates, 1, l.scales, 1);
+        //axpy_cpu(l.n, learning_rate/batch, l.scale_updates, 1, l.scales, 1);
+        axpy_cpu(l.n, div(learning_rate, float2type(batch)), l.scale_updates, 1, l.scales, 1);
         scal_cpu(l.n, momentum, l.scale_updates, 1);
     }
 
-    axpy_cpu(size, -decay*batch, l.weights, 1, l.weight_updates, 1);
-    axpy_cpu(size, learning_rate/batch, l.weight_updates, 1, l.weights, 1);
+    //axpy_cpu(size, -decay*batch, l.weights, 1, l.weight_updates, 1);
+    axpy_cpu(size, neg(mul(decay, float2type(batch))), l.weights, 1, l.weight_updates, 1);
+    //axpy_cpu(size, learning_rate/batch, l.weight_updates, 1, l.weights, 1);
+    axpy_cpu(size, div(learning_rate, float2type(batch)), l.weight_updates, 1, l.weights, 1);
     scal_cpu(size, momentum, l.weight_updates, 1);
 }
 
