@@ -98,8 +98,19 @@ backup:
 results:
 	mkdir -p results
 
-.PHONY: clean
+.PHONY: clean clean-unum test-unum
 
-clean:
+UNUM4_DIR:=../iob-dnn/submodules/UNUM4/software
+UNUM4_TRG:=unum4
+
+test-unum: clean-unum $(UNUM4_TRG)
+	./$(UNUM4_TRG)
+
+$(UNUM4_TRG): src/$(UNUM4_TRG).cpp $(UNUM4_DIR)/iob_unum4.h $(UNUM4_DIR)/pc/iob_unum4.c
+	g++ -Wextra -I$(UNUM4_DIR) $(UNUM4_DIR)/pc/iob_unum4.c $< -o $@
+
+clean: clean-unum
 	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ) $(OBJDIR)/*
 
+clean-unum:
+	rm -f $(UNUM4_TRG)
