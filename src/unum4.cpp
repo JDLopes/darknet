@@ -73,25 +73,36 @@ int main(int argc, char **argv) {
     Unum4 a = 1.0;
     Unum4 b = 2.0;
 
+    std::cout << std::endl;
+
     // Arithmetics
+    std::cout << "Arithmetic tests" << std::endl;
+    std::cout << "a = " << (double)a << std::endl;
+    std::cout << "b = " << (double)b << std::endl;
+    std::cout << std::endl;
     Unum4 c = a + b;
-    std::cout << (double)c << std::endl;
+    std::cout << "c = a + b = " << (double)c << std::endl;
     c += b;
-    std::cout << (double)c << std::endl;
+    std::cout << "c += b = " << (double)c << std::endl;
     c = a - b;
-    std::cout << (double)c << std::endl;
+    std::cout << "c = a - b = " << (double)c << std::endl;
     c -= b;
-    std::cout << (double)c << std::endl;
+    std::cout << "c -= b = " << (double)c << std::endl;
     c = a * b;
-    std::cout << (double)c << std::endl;
+    std::cout << "c = a * b = " << (double)c << std::endl;
     c *= b;
-    std::cout << (double)c << std::endl;
+    std::cout << "c *= b = " << (double)c << std::endl;
     c = a / b;
-    std::cout << (double)c << std::endl;
+    std::cout << "c = a / b = " << (double)c << std::endl;
     c /= b;
-    std::cout << (double)c << std::endl;
+    std::cout << "c /= b = " << (double)c << std::endl;
+    std::cout << std::endl;
 
     // Comparators
+    std::cout << "Comparator tests" << std::endl;
+    std::cout << "a = " << (double)a << std::endl;
+    std::cout << "b = " << (double)b << std::endl;
+    std::cout << std::endl;
     if (a > b) {
       std::cout << "a > b" << std::endl;
     } else {
@@ -122,12 +133,90 @@ int main(int argc, char **argv) {
     } else {
       std::cout << "a !!= b" << std::endl;
     }
+    std::cout << std::endl;
+
+    a = 2.0;
+    b = 1.0;
+    std::cout << "a = " << (double)a << std::endl;
+    std::cout << "b = " << (double)b << std::endl;
+    std::cout << std::endl;
+    if (a > b) {
+      std::cout << "a > b" << std::endl;
+    } else {
+      std::cout << "a !> b" << std::endl;
+    }
+    if (a >= b) {
+      std::cout << "a >= b" << std::endl;
+    } else {
+      std::cout << "a !>= b" << std::endl;
+    }
+    if (a < b) {
+      std::cout << "a < b" << std::endl;
+    } else {
+      std::cout << "a !< b" << std::endl;
+    }
+    if (a <= b) {
+      std::cout << "a <= b" << std::endl;
+    } else {
+      std::cout << "a !<= b" << std::endl;
+    }
+    if (a == b) {
+      std::cout << "a == b" << std::endl;
+    } else {
+      std::cout << "a !== b" << std::endl;
+    }
+    if (a != b) {
+      std::cout << "a != b" << std::endl;
+    } else {
+      std::cout << "a !!= b" << std::endl;
+    }
+    std::cout << std::endl;
+
+    a = 2.0;
+    b = 2.0;
+    std::cout << "a = " << (double)a << std::endl;
+    std::cout << "b = " << (double)b << std::endl;
+    std::cout << std::endl;
+    if (a > b) {
+      std::cout << "a > b" << std::endl;
+    } else {
+      std::cout << "a !> b" << std::endl;
+    }
+    if (a >= b) {
+      std::cout << "a >= b" << std::endl;
+    } else {
+      std::cout << "a !>= b" << std::endl;
+    }
+    if (a < b) {
+      std::cout << "a < b" << std::endl;
+    } else {
+      std::cout << "a !< b" << std::endl;
+    }
+    if (a <= b) {
+      std::cout << "a <= b" << std::endl;
+    } else {
+      std::cout << "a !<= b" << std::endl;
+    }
+    if (a == b) {
+      std::cout << "a == b" << std::endl;
+    } else {
+      std::cout << "a !== b" << std::endl;
+    }
+    if (a != b) {
+      std::cout << "a != b" << std::endl;
+    } else {
+      std::cout << "a !!= b" << std::endl;
+    }
+    std::cout << std::endl;
 
     // Conversions
+    std::cout << "Arithmetic tests" << std::endl;
     c = 37.48;
-    std::cout << (double)c << std::endl;
-    std::cout << (float)c << std::endl;
-    std::cout << (int)c << std::endl;
+    std::cout << "c = " << (double)c << std::endl;
+    std::cout << "(double)c = " << (double)c << std::endl;
+    std::cout << "(float)c = " << (float)c << std::endl;
+    std::cout << "(int)c = " << (int)c << std::endl;
+    std::cout << std::endl;
 
     return 0;
 }
