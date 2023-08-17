@@ -73,10 +73,8 @@ int main(int argc, char **argv) {
     Unum4 a = 1.0;
     Unum4 b = 2.0;
 
-    std::cout << std::endl;
-
     // Arithmetics
-    std::cout << "Arithmetic tests" << std::endl;
+    std::cout << std::endl << "Arithmetic tests" << std::endl << std::endl;
     std::cout << "a = " << (double)a << std::endl;
     std::cout << "b = " << (double)b << std::endl;
     std::cout << std::endl;
@@ -99,7 +97,7 @@ int main(int argc, char **argv) {
     std::cout << std::endl;
 
     // Comparators
-    std::cout << "Comparator tests" << std::endl;
+    std::cout << std::endl << "Comparator tests" << std::endl << std::endl;
     std::cout << "a = " << (double)a << std::endl;
     std::cout << "b = " << (double)b << std::endl;
     std::cout << std::endl;
@@ -210,7 +208,7 @@ int main(int argc, char **argv) {
     std::cout << std::endl;
 
     // Conversions
-    std::cout << "Arithmetic tests" << std::endl;
+    std::cout << std::endl << "Arithmetic tests" << std::endl << std::endl;
     c = 37.48;
     std::cout << "c = " << (double)c << std::endl;
     std::cout << "(double)c = " << (double)c << std::endl;
