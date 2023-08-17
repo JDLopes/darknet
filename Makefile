@@ -107,7 +107,7 @@ test-unum: clean-unum $(UNUM4_TRG)
 	./$(UNUM4_TRG)
 
 $(UNUM4_TRG): src/$(UNUM4_TRG).cpp $(UNUM4_DIR)/iob_unum4.h $(UNUM4_DIR)/pc/iob_unum4.c
-	g++ -Wextra -I$(UNUM4_DIR) $(UNUM4_DIR)/pc/iob_unum4.c $< -o $@
+	g++ -Wextra -I$(UNUM4_DIR) $^ -o $@
 
 clean: clean-unum
 	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ) $(OBJDIR)/*
