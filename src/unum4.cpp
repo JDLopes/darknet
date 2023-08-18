@@ -24,6 +24,19 @@ class Unum4 {
         //
 
         // Addition
+        Unum4 operator++() {
+            Unum4 res = 1.0;
+            res.val = unum4_add(val, res.val, &overflow);
+            return res;
+        }
+
+        Unum4 operator++( int ) {
+            Unum4 res;
+            res.val = val;
+            val = unum4_add(val, ((Unum4)1.0).val, &overflow);
+            return res;
+        }
+
         Unum4 operator+(Unum4 const& other) {
             Unum4 res;
             res.val = unum4_add(val, other.val, &overflow);
@@ -35,6 +48,25 @@ class Unum4 {
         }
 
         // Subtraction
+        Unum4 operator--() {
+            Unum4 res = 1.0;
+            res.val = unum4_sub(val, res.val, &overflow);
+            return res;
+        }
+
+        Unum4 operator--( int ) {
+            Unum4 res;
+            res.val = val;
+            val = unum4_sub(val, ((Unum4)1.0).val, &overflow);
+            return res;
+        }
+
+        Unum4 operator-() {
+            Unum4 res = 0.0;
+            res.val = unum4_sub(res.val, val, &overflow);
+            return res;
+        }
+
         Unum4 operator-(Unum4 const& other) {
             Unum4 res;
             res.val = unum4_sub(val, other.val, &overflow);
@@ -115,13 +147,18 @@ int main(int argc, char **argv) {
     std::cout << "b = " << b << std::endl;
     std::cout << std::endl;
 
+    std::cout << "c++ = " << c++ << std::endl;
+    std::cout << "++c = " << ++c << std::endl;
     c = a + b;
     std::cout << "c = a + b = " << c << std::endl;
     c += b;
     std::cout << "c += b = " << c << std::endl;
     std::cout << std::endl;
 
+    std::cout << "c-- = " << c-- << std::endl;
+    std::cout << "--c = " << --c << std::endl;
     c = a - b;
+    std::cout << "-b = " << -b << std::endl;
     std::cout << "c = a - b = " << c << std::endl;
     c -= b;
     std::cout << "c -= b = " << c << std::endl;
