@@ -120,6 +120,24 @@ class Unum4 {
             return res;
         }
 
+        Unum4 operator*(double const other) {
+            Unum4 res = other;
+            res.val = unum4_mul(val, res.val, &overflow, &underflow);
+            return res;
+        }
+
+        Unum4 operator*(float const other) {
+            Unum4 res = other;
+            res.val = unum4_mul(val, res.val, &overflow, &underflow);
+            return res;
+        }
+
+        Unum4 operator*(int const other) {
+            Unum4 res = other;
+            res.val = unum4_mul(val, res.val, &overflow, &underflow);
+            return res;
+        }
+
         Unum4 operator*=(Unum4 const& other) {
             return val = unum4_mul(val, other.val, &overflow, &underflow);
         }
@@ -128,6 +146,24 @@ class Unum4 {
         Unum4 operator/(Unum4 const& other) {
             Unum4 res;
             res.val = unum4_div(val, other.val, &overflow, &underflow, &div_by_zero);
+            return res;
+        }
+
+        Unum4 operator/(double const other) {
+            Unum4 res = other;
+            res.val = unum4_div(val, res.val, &overflow, &underflow, &div_by_zero);
+            return res;
+        }
+
+        Unum4 operator/(float const other) {
+            Unum4 res = other;
+            res.val = unum4_div(val, res.val, &overflow, &underflow, &div_by_zero);
+            return res;
+        }
+
+        Unum4 operator/(int const other) {
+            Unum4 res = other;
+            res.val = unum4_div(val, res.val, &overflow, &underflow, &div_by_zero);
             return res;
         }
 
@@ -214,12 +250,24 @@ int main(int argc, char **argv) {
 
     c = a * b;
     std::cout << "c = a * b = " << c << std::endl;
+    c = b * 4.0;
+    std::cout << "c = b * 4.0 = " << c << std::endl;
+    c = b * 3.0F;
+    std::cout << "c = b * 3.0F = " << c << std::endl;
+    c = b * 7;
+    std::cout << "c = b * 7 = " << c << std::endl;
     c *= b;
     std::cout << "c *= b = " << c << std::endl;
     std::cout << std::endl;
 
     c = a / b;
     std::cout << "c = a / b = " << c << std::endl;
+    c = b / 4.0;
+    std::cout << "c = b / 4.0 = " << c << std::endl;
+    c = b / 3.0F;
+    std::cout << "c = b / 3.0F = " << c << std::endl;
+    c = b / 7;
+    std::cout << "c = b / 7 = " << c << std::endl;
     c /= b;
     std::cout << "c /= b = " << c << std::endl;
     std::cout << std::endl;
