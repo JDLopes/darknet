@@ -104,7 +104,7 @@ UNUM4_DIR:=./submodules/UNUM4
 UNUM4_TRG:=unum4
 
 ifeq ($(MAKECMDGOALS), test-unum)
-TEST=1
+TEST_UNUM4=1
 include $(UNUM4_DIR)/software/pc/unum4.mk
 endif
 
