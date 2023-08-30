@@ -100,14 +100,19 @@ results:
 
 .PHONY: clean clean-unum test-unum
 
-UNUM4_DIR:=../iob-dnn/submodules/UNUM4/software
+UNUM4_DIR:=./submodules/UNUM4
 UNUM4_TRG:=unum4
+
+ifeq ($(MAKECMDGOALS), test-unum)
+TEST=1
+include $(UNUM4_DIR)/software/pc/unum4.mk
+endif
 
 test-unum: clean-unum $(UNUM4_TRG)
 	./$(UNUM4_TRG)
 
-$(UNUM4_TRG): src/$(UNUM4_TRG).cpp $(UNUM4_DIR)/iob_unum4.h $(UNUM4_DIR)/pc/iob_unum4.c
-	g++ -Wextra -I$(UNUM4_DIR) $^ -o $@
+$(UNUM4_TRG): $(HDR) $(SRC)
+	g++ -Wextra $(INCLUDE) $^ -o $@
 
 clean: clean-unum
 	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ) $(OBJDIR)/*
