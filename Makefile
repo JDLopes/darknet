@@ -19,7 +19,10 @@ ALIB=libdarknet.a
 EXEC=darknet
 OBJDIR=./obj/
 
-CC=gcc
+UNUM4_DIR:=./submodules/UNUM4
+UNUM4_TRG:=unum4
+
+CC=g++
 CPP=g++
 NVCC=nvcc 
 AR=ar
@@ -27,7 +30,8 @@ ARFLAGS=rcs
 OPTS=-Ofast
 LDFLAGS= -lm -pthread 
 COMMON= -Iinclude/ -Isrc/
-CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
+#CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
+CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -fpermissive -fPIC
 
 ifeq ($(OPENMP), 1) 
 CFLAGS+= -fopenmp
@@ -73,7 +77,7 @@ all: obj backup results $(SLIB) $(ALIB) $(EXEC)
 #all: obj  results $(SLIB) $(ALIB) $(EXEC)
 
 
-$(EXEC): $(EXECOBJ) $(ALIB)
+$(EXEC): $(EXECOBJ) $(ALIB) $(UNUM4_DIR)/software/pc/$(UNUM4_TRG).a
 	$(CC) $(COMMON) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(ALIB)
 
 $(ALIB): $(OBJS)
@@ -98,14 +102,12 @@ backup:
 results:
 	mkdir -p results
 
-UNUM4_DIR:=./submodules/UNUM4
-UNUM4_TRG:=unum4
-
 ifneq ($(findstring test-unum, $(MAKECMDGOALS)),)
 TEST_UNUM4=1
 endif
 
 include $(UNUM4_DIR)/software/pc/unum4.mk
+COMMON+=$(INCLUDE)
 
 test-unum: clean-unum $(UNUM4_TRG)
 	./$(UNUM4_TRG)

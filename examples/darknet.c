@@ -1,8 +1,11 @@
 #include "darknet.h"
 
+#include "unum4.h"
+
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
 extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
@@ -399,6 +402,11 @@ void visualize(char *cfgfile, char *weightfile)
 
 int main(int argc, char **argv)
 {
+    Unum4 a = 3;
+    Unum4 b = 4;
+    Unum4 c;
+    c = a + b;
+    std::cout << "c = a + b = " << c << std::endl;
     //test_resize("data/bad.jpg");
     //test_box();
     //test_convolutional_layer();
