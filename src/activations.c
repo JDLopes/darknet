@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "activations.h"
 
 #include <math.h>
@@ -62,7 +63,7 @@ ACTIVATION get_activation(char *s)
     return RELU;
 }
 
-float activate(float x, ACTIVATION a)
+Unum4 activate(Unum4 x, ACTIVATION a)
 {
     switch(a){
         case LINEAR:
@@ -97,7 +98,7 @@ float activate(float x, ACTIVATION a)
     return 0;
 }
 
-void activate_array(float *x, const int n, const ACTIVATION a)
+void activate_array(Unum4 *x, const int n, const ACTIVATION a)
 {
     int i;
     for(i = 0; i < n; ++i){
@@ -105,7 +106,7 @@ void activate_array(float *x, const int n, const ACTIVATION a)
     }
 }
 
-float gradient(float x, ACTIVATION a)
+Unum4 gradient(Unum4 x, ACTIVATION a)
 {
     switch(a){
         case LINEAR:
@@ -140,7 +141,7 @@ float gradient(float x, ACTIVATION a)
     return 0;
 }
 
-void gradient_array(const float *x, const int n, const ACTIVATION a, float *delta)
+void gradient_array(const Unum4 *x, const int n, const ACTIVATION a, Unum4 *delta)
 {
     int i;
     for(i = 0; i < n; ++i){

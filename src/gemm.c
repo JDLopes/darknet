@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "gemm.h"
 #include "utils.h"
 #include "cuda.h"
@@ -5,10 +6,10 @@
 #include <stdio.h>
 #include <math.h>
 
-void gemm_bin(int M, int N, int K, float ALPHA, 
+void gemm_bin(int M, int N, int K, Unum4 ALPHA, 
         char  *A, int lda, 
-        float *B, int ldb,
-        float *C, int ldc)
+        Unum4 *B, int ldb,
+        Unum4 *C, int ldc)
 {
     int i,j,k;
     for(i = 0; i < M; ++i){
@@ -27,28 +28,28 @@ void gemm_bin(int M, int N, int K, float ALPHA,
     }
 }
 
-float *random_matrix(int rows, int cols)
+Unum4 *random_matrix(int rows, int cols)
 {
     int i;
-    float *m = calloc(rows*cols, sizeof(float));
+    Unum4 *m = calloc(rows*cols, sizeof(Unum4));
     for(i = 0; i < rows*cols; ++i){
-        m[i] = (float)rand()/RAND_MAX;
+        m[i] = (Unum4)rand()/RAND_MAX;
     }
     return m;
 }
 
 void time_random_matrix(int TA, int TB, int m, int k, int n)
 {
-    float *a;
+    Unum4 *a;
     if(!TA) a = random_matrix(m,k);
     else a = random_matrix(k,m);
     int lda = (!TA)?k:m;
-    float *b;
+    Unum4 *b;
     if(!TB) b = random_matrix(k,n);
     else b = random_matrix(n,k);
     int ldb = (!TB)?n:k;
 
-    float *c = random_matrix(m,n);
+    Unum4 *c = random_matrix(m,n);
     int i;
     clock_t start = clock(), end;
     for(i = 0; i<10; ++i){
@@ -62,25 +63,25 @@ void time_random_matrix(int TA, int TB, int m, int k, int n)
 }
 
 
-void gemm(int TA, int TB, int M, int N, int K, float ALPHA, 
-        float *A, int lda, 
-        float *B, int ldb,
-        float BETA,
-        float *C, int ldc)
+void gemm(int TA, int TB, int M, int N, int K, Unum4 ALPHA, 
+        Unum4 *A, int lda, 
+        Unum4 *B, int ldb,
+        Unum4 BETA,
+        Unum4 *C, int ldc)
 {
     gemm_cpu( TA,  TB,  M, N, K, ALPHA,A,lda, B, ldb,BETA,C,ldc);
 }
 
-void gemm_nn(int M, int N, int K, float ALPHA, 
-        float *A, int lda, 
-        float *B, int ldb,
-        float *C, int ldc)
+void gemm_nn(int M, int N, int K, Unum4 ALPHA, 
+        Unum4 *A, int lda, 
+        Unum4 *B, int ldb,
+        Unum4 *C, int ldc)
 {
     int i,j,k;
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(k = 0; k < K; ++k){
-            register float A_PART = ALPHA*A[i*lda+k];
+            register Unum4 A_PART = ALPHA*A[i*lda+k];
             for(j = 0; j < N; ++j){
                 C[i*ldc+j] += A_PART*B[k*ldb+j];
             }
@@ -88,16 +89,16 @@ void gemm_nn(int M, int N, int K, float ALPHA,
     }
 }
 
-void gemm_nt(int M, int N, int K, float ALPHA, 
-        float *A, int lda, 
-        float *B, int ldb,
-        float *C, int ldc)
+void gemm_nt(int M, int N, int K, Unum4 ALPHA, 
+        Unum4 *A, int lda, 
+        Unum4 *B, int ldb,
+        Unum4 *C, int ldc)
 {
     int i,j,k;
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
-            register float sum = 0;
+            register Unum4 sum = 0;
             for(k = 0; k < K; ++k){
                 sum += ALPHA*A[i*lda+k]*B[j*ldb + k];
             }
@@ -106,16 +107,16 @@ void gemm_nt(int M, int N, int K, float ALPHA,
     }
 }
 
-void gemm_tn(int M, int N, int K, float ALPHA, 
-        float *A, int lda, 
-        float *B, int ldb,
-        float *C, int ldc)
+void gemm_tn(int M, int N, int K, Unum4 ALPHA, 
+        Unum4 *A, int lda, 
+        Unum4 *B, int ldb,
+        Unum4 *C, int ldc)
 {
     int i,j,k;
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(k = 0; k < K; ++k){
-            register float A_PART = ALPHA*A[k*lda+i];
+            register Unum4 A_PART = ALPHA*A[k*lda+i];
             for(j = 0; j < N; ++j){
                 C[i*ldc+j] += A_PART*B[k*ldb+j];
             }
@@ -123,16 +124,16 @@ void gemm_tn(int M, int N, int K, float ALPHA,
     }
 }
 
-void gemm_tt(int M, int N, int K, float ALPHA, 
-        float *A, int lda, 
-        float *B, int ldb,
-        float *C, int ldc)
+void gemm_tt(int M, int N, int K, Unum4 ALPHA, 
+        Unum4 *A, int lda, 
+        Unum4 *B, int ldb,
+        Unum4 *C, int ldc)
 {
     int i,j,k;
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
-            register float sum = 0;
+            register Unum4 sum = 0;
             for(k = 0; k < K; ++k){
                 sum += ALPHA*A[i+k*lda]*B[k+j*ldb];
             }
@@ -142,11 +143,11 @@ void gemm_tt(int M, int N, int K, float ALPHA,
 }
 
 
-void gemm_cpu(int TA, int TB, int M, int N, int K, float ALPHA, 
-        float *A, int lda, 
-        float *B, int ldb,
-        float BETA,
-        float *C, int ldc)
+void gemm_cpu(int TA, int TB, int M, int N, int K, Unum4 ALPHA, 
+        Unum4 *A, int lda, 
+        Unum4 *B, int ldb,
+        Unum4 BETA,
+        Unum4 *C, int ldc)
 {
     //printf("cpu: %d %d %d %d %d %f %d %d %f %d\n",TA, TB, M, N, K, ALPHA, lda, ldb, BETA, ldc);
     int i, j;
@@ -169,11 +170,11 @@ void gemm_cpu(int TA, int TB, int M, int N, int K, float ALPHA,
 
 #include <math.h>
 
-void gemm_gpu(int TA, int TB, int M, int N, int K, float ALPHA, 
-        float *A_gpu, int lda, 
-        float *B_gpu, int ldb,
-        float BETA,
-        float *C_gpu, int ldc)
+void gemm_gpu(int TA, int TB, int M, int N, int K, Unum4 ALPHA, 
+        Unum4 *A_gpu, int lda, 
+        Unum4 *B_gpu, int ldb,
+        Unum4 BETA,
+        Unum4 *C_gpu, int ldc)
 {
     cublasHandle_t handle = blas_handle();
     cudaError_t status = cublasSgemm(handle, (TB ? CUBLAS_OP_T : CUBLAS_OP_N), 
@@ -188,23 +189,23 @@ void gemm_gpu(int TA, int TB, int M, int N, int K, float ALPHA,
 
 void time_gpu_random_matrix(int TA, int TB, int m, int k, int n)
 {
-    float *a;
+    Unum4 *a;
     if(!TA) a = random_matrix(m,k);
     else a = random_matrix(k,m);
     int lda = (!TA)?k:m;
-    float *b;
+    Unum4 *b;
     if(!TB) b = random_matrix(k,n);
     else b = random_matrix(n,k);
     int ldb = (!TB)?n:k;
 
-    float *c = random_matrix(m,n);
+    Unum4 *c = random_matrix(m,n);
     int i;
     clock_t start = clock(), end;
     for(i = 0; i<32; ++i){
         gemm_gpu(TA,TB,m,n,k,1,a,lda,b,ldb,1,c,n);
     }
     end = clock();
-    printf("Matrix Multiplication %dx%d * %dx%d, TA=%d, TB=%d: %lf s\n",m,k,k,n, TA, TB, (float)(end-start)/CLOCKS_PER_SEC);
+    printf("Matrix Multiplication %dx%d * %dx%d, TA=%d, TB=%d: %lf s\n",m,k,k,n, TA, TB, (Unum4)(end-start)/CLOCKS_PER_SEC);
     free(a);
     free(b);
     free(c);
@@ -213,17 +214,17 @@ void time_gpu_random_matrix(int TA, int TB, int m, int k, int n)
 void time_gpu(int TA, int TB, int m, int k, int n)
 {
     int iter = 10;
-    float *a = random_matrix(m,k);
-    float *b = random_matrix(k,n);
+    Unum4 *a = random_matrix(m,k);
+    Unum4 *b = random_matrix(k,n);
 
     int lda = (!TA)?k:m;
     int ldb = (!TB)?n:k;
 
-    float *c = random_matrix(m,n);
+    Unum4 *c = random_matrix(m,n);
 
-    float *a_cl = cuda_make_array(a, m*k);
-    float *b_cl = cuda_make_array(b, k*n);
-    float *c_cl = cuda_make_array(c, m*n);
+    Unum4 *a_cl = cuda_make_array(a, m*k);
+    Unum4 *b_cl = cuda_make_array(b, k*n);
+    Unum4 *c_cl = cuda_make_array(c, m*n);
 
     int i;
     clock_t start = clock(), end;
@@ -231,10 +232,10 @@ void time_gpu(int TA, int TB, int m, int k, int n)
         gemm_gpu(TA,TB,m,n,k,1,a_cl,lda,b_cl,ldb,1,c_cl,n);
         cudaThreadSynchronize();
     }
-    double flop = ((double)m)*n*(2.*k + 2.)*iter;
-    double gflop = flop/pow(10., 9);
+    Unum4 flop = ((Unum4)m)*n*(2.*k + 2.)*iter;
+    Unum4 gflop = flop/pow(10., 9);
     end = clock();
-    double seconds = sec(end-start);
+    Unum4 seconds = sec(end-start);
     printf("Matrix Multiplication %dx%d * %dx%d, TA=%d, TB=%d: %lf s, %lf GFLOPS\n",m,k,k,n, TA, TB, seconds, gflop/seconds);
     cuda_free(a_cl);
     cuda_free(b_cl);
@@ -248,19 +249,19 @@ void time_gpu(int TA, int TB, int m, int k, int n)
 void test_gpu_accuracy(int TA, int TB, int m, int k, int n)
 {
     srand(0);
-    float *a;
+    Unum4 *a;
     if(!TA) a = random_matrix(m,k);
     else a = random_matrix(k,m);
     int lda = (!TA)?k:m;
-    float *b;
+    Unum4 *b;
     if(!TB) b = random_matrix(k,n);
     else b = random_matrix(n,k);
     int ldb = (!TB)?n:k;
 
-    float *c = random_matrix(m,n);
-    float *c_gpu = random_matrix(m,n);
-    memset(c, 0, m*n*sizeof(float));
-    memset(c_gpu, 0, m*n*sizeof(float));
+    Unum4 *c = random_matrix(m,n);
+    Unum4 *c_gpu = random_matrix(m,n);
+    memset(c, 0, m*n*sizeof(Unum4));
+    memset(c_gpu, 0, m*n*sizeof(Unum4));
     int i;
     //pm(m,k,b);
     gemm_gpu(TA,TB,m,n,k,1,a,lda,b,ldb,1,c_gpu,n);
@@ -270,7 +271,7 @@ void test_gpu_accuracy(int TA, int TB, int m, int k, int n)
     gemm_cpu(TA,TB,m,n,k,1,a,lda,b,ldb,1,c,n);
     //printf("\n\nCPU\n");
     //pm(m, n, c);
-    double sse = 0;
+    Unum4 sse = 0;
     for(i = 0; i < m*n; ++i) {
         //printf("%f %f\n", c[i], c_gpu[i]);
         sse += pow(c[i]-c_gpu[i], 2);

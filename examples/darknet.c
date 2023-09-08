@@ -1,6 +1,5 @@
-#include "darknet.h"
-
 #include "unum4.h"
+#include "darknet.h"
 
 #include <time.h>
 #include <stdlib.h>
@@ -8,7 +7,7 @@
 #include <iostream>
 
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
-extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
+extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, Unum4 thresh, Unum4 hier_thresh, char *outfile, int fullscreen);
 extern void run_yolo(int argc, char **argv);
 extern void run_detector(int argc, char **argv);
 extern void run_coco(int argc, char **argv);
@@ -122,16 +121,16 @@ void speed(char *cfgfile, int tics)
     network *net = parse_network_cfg(cfgfile);
     set_batch_network(net, 1);
     int i;
-    double time=what_time_is_it_now();
+    Unum4 time=what_time_is_it_now();
     image im = make_image(net->w, net->h, net->c*net->batch);
     for(i = 0; i < tics; ++i){
         network_predict(net, im.data);
     }
-    double t = what_time_is_it_now() - time;
+    Unum4 t = what_time_is_it_now() - time;
     long ops = numops(net);
     printf("\n%d evals, %f Seconds\n", tics, t);
-    printf("Floating Point Operations: %.2f Bn\n", (float)ops/1000000000.);
-    printf("FLOPS: %.2f Bn\n", (float)ops/1000000000.*tics/t);
+    printf("Floating Point Operations: %.2f Bn\n", (Unum4)ops/1000000000.);
+    printf("FLOPS: %.2f Bn\n", (Unum4)ops/1000000000.*tics/t);
     printf("Speed: %f sec/eval\n", t/tics);
     printf("Speed: %f Hz\n", tics/t);
 }
@@ -142,7 +141,7 @@ void operations(char *cfgfile)
     network *net = parse_network_cfg(cfgfile);
     long ops = numops(net);
     printf("Floating Point Operations: %ld\n", ops);
-    printf("Floating Point Operations: %.2f Bn\n", (float)ops/1000000000.);
+    printf("Floating Point Operations: %.2f Bn\n", (Unum4)ops/1000000000.);
 }
 
 void oneoff(char *cfgfile, char *weightfile, char *outfile)
@@ -269,12 +268,12 @@ layer normalize_layer(layer l, int n)
 {
     int j;
     l.batch_normalize=1;
-    l.scales = calloc(n, sizeof(float));
+    l.scales = calloc(n, sizeof(Unum4));
     for(j = 0; j < n; ++j){
         l.scales[j] = 1;
     }
-    l.rolling_mean = calloc(n, sizeof(float));
-    l.rolling_variance = calloc(n, sizeof(float));
+    l.rolling_mean = calloc(n, sizeof(Unum4));
+    l.rolling_variance = calloc(n, sizeof(Unum4));
     return l;
 }
 
@@ -438,7 +437,7 @@ int main(int argc, char **argv)
     } else if (0 == strcmp(argv[1], "detector")){
         run_detector(argc, argv);
     } else if (0 == strcmp(argv[1], "detect")){
-        float thresh = find_float_arg(argc, argv, "-thresh", .5);
+        Unum4 thresh = find_Unum4_arg(argc, argv, "-thresh", .5);
         char *filename = (argc > 4) ? argv[4]: 0;
         char *outfile = find_char_arg(argc, argv, "-out", 0);
         int fullscreen = find_arg(argc, argv, "-fullscreen");

@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "darknet.h"
 
 #include <assert.h>
@@ -7,8 +8,8 @@
 int inverted = 1;
 int noi = 1;
 static const int nind = 10;
-int legal_go(float *b, float *ko, int p, int r, int c);
-int check_ko(float *x, float *ko);
+int legal_go(Unum4 *b, Unum4 *ko, int p, int r, int c);
+int check_ko(Unum4 *x, Unum4 *ko);
 
 typedef struct {
     char **data;
@@ -50,10 +51,10 @@ moves load_go_moves(char *filename)
     return m;
 }
 
-void string_to_board(char *s, float *board)
+void string_to_board(char *s, Unum4 *board)
 {
     int i, j;
-    memset(board, 0, 2*19*19*sizeof(float));
+    memset(board, 0, 2*19*19*sizeof(Unum4));
     int count = 0;
     for(i = 0; i < 91; ++i){
         char c = s[i];
@@ -68,7 +69,7 @@ void string_to_board(char *s, float *board)
     }
 }
 
-void board_to_string(char *s, float *board)
+void board_to_string(char *s, Unum4 *board)
 {
     int i, j;
     memset(s, 0, (19*19/4+1)*sizeof(char));
@@ -85,7 +86,7 @@ void board_to_string(char *s, float *board)
     }
 }
 
-static int occupied(float *b, int i)
+static int occupied(Unum4 *b, int i)
 {
     if (b[i]) return 1;
     if (b[i+19*19]) return -1;
@@ -99,8 +100,8 @@ data random_go_moves(moves m, int n)
     d.y = make_matrix(n, 19*19+2);
     int i, j;
     for(i = 0; i < n; ++i){
-        float *board = d.X.vals[i];
-        float *label = d.y.vals[i];
+        Unum4 *board = d.X.vals[i];
+        Unum4 *label = d.y.vals[i];
         char *b = m.data[rand()%m.n];
         int player = b[0] - '0';
         int result = b[1] - '0';
@@ -118,8 +119,8 @@ data random_go_moves(moves m, int n)
 
         int flip = rand()%2;
         int rotate = rand()%4;
-        image in = float_to_image(19, 19, 3, board);
-        image out = float_to_image(19, 19, 1, label);
+        image in = Unum4_to_image(19, 19, 3, board);
+        image out = Unum4_to_image(19, 19, 1, label);
         if(flip){
             flip_image(in);
             flip_image(out);
@@ -134,7 +135,7 @@ data random_go_moves(moves m, int n)
 void train_go(char *cfgfile, char *weightfile, char *filename, int *gpus, int ngpus, int clear)
 {
     int i;
-    float avg_loss = -1;
+    Unum4 avg_loss = -1;
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
     printf("%d\n", ngpus);
@@ -163,13 +164,13 @@ void train_go(char *cfgfile, char *weightfile, char *filename, int *gpus, int ng
     printf("Moves: %d\n", N);
     int epoch = (*net->seen)/N;
     while(get_current_batch(net) < net->max_batches || net->max_batches == 0){
-        double time=what_time_is_it_now();
+        Unum4 time=what_time_is_it_now();
 
         data train = random_go_moves(m, net->batch*net->subdivisions*ngpus);
         printf("Loaded: %lf seconds\n", what_time_is_it_now() - time);
         time=what_time_is_it_now();
 
-        float loss = 0;
+        Unum4 loss = 0;
 #ifdef GPU
         if(ngpus == 1){
             loss = train_network(net, train);
@@ -183,7 +184,7 @@ void train_go(char *cfgfile, char *weightfile, char *filename, int *gpus, int ng
 
         if(avg_loss == -1) avg_loss = loss;
         avg_loss = avg_loss*.95 + loss*.05;
-        printf("%ld, %.3f: %f, %f avg, %f rate, %lf seconds, %ld images\n", get_current_batch(net), (float)(*net->seen)/N, loss, avg_loss, get_current_rate(net), what_time_is_it_now()-time, *net->seen);
+        printf("%ld, %.3f: %f, %f avg, %f rate, %lf seconds, %ld images\n", get_current_batch(net), (Unum4)(*net->seen)/N, loss, avg_loss, get_current_rate(net), what_time_is_it_now()-time, *net->seen);
         if(*net->seen/N > epoch){
             epoch = *net->seen/N;
             char buff[256];
@@ -209,7 +210,7 @@ void train_go(char *cfgfile, char *weightfile, char *filename, int *gpus, int ng
     free(base);
 }
 
-static void propagate_liberty(float *board, int *lib, int *visited, int row, int col, int side)
+static void propagate_liberty(Unum4 *board, int *lib, int *visited, int row, int col, int side)
 {
     if (row < 0 || row > 18 || col < 0 || col > 18) return;
     int index = row*19 + col;
@@ -224,7 +225,7 @@ static void propagate_liberty(float *board, int *lib, int *visited, int row, int
 }
 
 
-static int *calculate_liberties(float *board)
+static int *calculate_liberties(Unum4 *board)
 {
     int *lib = calloc(19*19, sizeof(int));
     int visited[19*19];
@@ -244,7 +245,7 @@ static int *calculate_liberties(float *board)
     return lib;
 }
 
-void print_board(FILE *stream, float *board, int player, int *indexes)
+void print_board(FILE *stream, Unum4 *board, int player, int *indexes)
 {
     int i,j,n;
     fprintf(stream, "   ");
@@ -283,31 +284,31 @@ void print_board(FILE *stream, float *board, int player, int *indexes)
     }
 }
 
-void flip_board(float *board)
+void flip_board(Unum4 *board)
 {
     int i;
     for(i = 0; i < 19*19; ++i){
-        float swap = board[i];
+        Unum4 swap = board[i];
         board[i] = board[i+19*19];
         board[i+19*19] = swap;
         board[i+19*19*2] = 1-board[i+19*19*2];
     }
 }
 
-float predict_move2(network *net, float *board, float *move, int multi)
+Unum4 predict_move2(network *net, Unum4 *board, Unum4 *move, int multi)
 {
-    float *output = network_predict(net, board);
+    Unum4 *output = network_predict(net, board);
     copy_cpu(19*19+1, output, 1, move, 1);
-    float result = output[19*19 + 1];
+    Unum4 result = output[19*19 + 1];
     int i;
     if(multi){
-        image bim = float_to_image(19, 19, 3, board);
+        image bim = Unum4_to_image(19, 19, 3, board);
         for(i = 1; i < 8; ++i){
             rotate_image_cw(bim, i);
             if(i >= 4) flip_image(bim);
 
-            float *output = network_predict(net, board);
-            image oim = float_to_image(19, 19, 1, output);
+            Unum4 *output = network_predict(net, board);
+            image oim = Unum4_to_image(19, 19, 1, output);
             result += output[19*19 + 1];
 
             if(i >= 4) flip_image(oim);
@@ -327,7 +328,7 @@ float predict_move2(network *net, float *board, float *move, int multi)
     return result;
 }
 
-static void remove_connected(float *b, int *lib, int p, int r, int c)
+static void remove_connected(Unum4 *b, int *lib, int p, int r, int c)
 {
     if (r < 0 || r >= 19 || c < 0 || c >= 19) return;
     if (occupied(b, r*19 + c) != p) return;
@@ -341,7 +342,7 @@ static void remove_connected(float *b, int *lib, int p, int r, int c)
 }
 
 
-void move_go(float *b, int p, int r, int c)
+void move_go(Unum4 *b, int p, int r, int c)
 {
     int *l = calculate_liberties(b);
     if(p > 0) b[r*19 + c] = 1;
@@ -353,22 +354,22 @@ void move_go(float *b, int p, int r, int c)
     free(l);
 }
 
-int compare_board(float *a, float *b)
+int compare_board(Unum4 *a, Unum4 *b)
 {
-    if(memcmp(a, b, 19*19*3*sizeof(float)) == 0) return 1;
+    if(memcmp(a, b, 19*19*3*sizeof(Unum4)) == 0) return 1;
     return 0;
 }
 
 typedef struct mcts_tree{
-    float *board;
+    Unum4 *board;
     struct mcts_tree **children;
-    float *prior;
+    Unum4 *prior;
     int *visit_count;
-    float *value;
-    float *mean;
-    float *prob;
+    Unum4 *value;
+    Unum4 *mean;
+    Unum4 *prob;
     int total_count;
-    float result;
+    Unum4 result;
     int done;
     int pass;
 } mcts_tree;
@@ -390,25 +391,25 @@ void free_mcts(mcts_tree *root)
     free(root);
 }
 
-float *network_predict_rotations(network *net, float *next)
+Unum4 *network_predict_rotations(network *net, Unum4 *next)
 {
     int n = net->batch;
-    float *in = calloc(19*19*3*n, sizeof(float));
-    image im = float_to_image(19, 19, 3, next);
+    Unum4 *in = calloc(19*19*3*n, sizeof(Unum4));
+    image im = Unum4_to_image(19, 19, 3, next);
     int i,j;
     int *inds = random_index_order(0, 8);
     for(j = 0; j < n; ++j){
         i = inds[j];
         rotate_image_cw(im, i);
         if(i >= 4) flip_image(im);
-        memcpy(in + 19*19*3*j, im.data, 19*19*3*sizeof(float));
+        memcpy(in + 19*19*3*j, im.data, 19*19*3*sizeof(Unum4));
         if(i >= 4) flip_image(im);
         rotate_image_cw(im, -i);
     }
-    float *pred = network_predict(net, in);
+    Unum4 *pred = network_predict(net, in);
     for(j = 0; j < n; ++j){
         i = inds[j];
-        image im = float_to_image(19, 19, 1, pred + j*(19*19 + 2));
+        image im = Unum4_to_image(19, 19, 1, pred + j*(19*19 + 2));
         if(i >= 4) flip_image(im);
         rotate_image_cw(im, -i);
         if(j > 0){
@@ -421,21 +422,21 @@ float *network_predict_rotations(network *net, float *next)
     return pred;
 }
 
-mcts_tree *expand(float *next, float *ko, network *net)
+mcts_tree *expand(Unum4 *next, Unum4 *ko, network *net)
 {
     mcts_tree *root = calloc(1, sizeof(mcts_tree));
     root->board = next;
     root->children = calloc(19*19+1, sizeof(mcts_tree*));
-    root->prior = calloc(19*19 + 1, sizeof(float));
-    root->prob = calloc(19*19 + 1, sizeof(float));
-    root->mean = calloc(19*19 + 1, sizeof(float));
-    root->value = calloc(19*19 + 1, sizeof(float));
+    root->prior = calloc(19*19 + 1, sizeof(Unum4));
+    root->prob = calloc(19*19 + 1, sizeof(Unum4));
+    root->mean = calloc(19*19 + 1, sizeof(Unum4));
+    root->value = calloc(19*19 + 1, sizeof(Unum4));
     root->visit_count = calloc(19*19 + 1, sizeof(int));
     root->total_count = 1;
     int i;
-    float *pred = network_predict_rotations(net, next);
+    Unum4 *pred = network_predict_rotations(net, next);
     copy_cpu(19*19+1, pred, 1, root->prior, 1);
-    float val = 2*pred[19*19 + 1] - 1;
+    Unum4 val = 2*pred[19*19 + 1] - 1;
     root->result = val;
     for(i = 0; i < 19*19+1; ++i) {
         root->visit_count[i] = 0;
@@ -451,18 +452,18 @@ mcts_tree *expand(float *next, float *ko, network *net)
     return root;
 }
 
-float *copy_board(float *board)
+Unum4 *copy_board(Unum4 *board)
 {
-    float *next = calloc(19*19*3, sizeof(float));
+    Unum4 *next = calloc(19*19*3, sizeof(Unum4));
     copy_cpu(19*19*3, board, 1, next, 1);
     return next;
 }
 
-float select_mcts(mcts_tree *root, network *net, float *prev, float cpuct)
+Unum4 select_mcts(mcts_tree *root, network *net, Unum4 *prev, Unum4 cpuct)
 {
     if(root->done) return -root->result;
     int i;
-    float max = -1000;
+    Unum4 max = -1000;
     int max_i = 0;
     for(i = 0; i < 19*19+1; ++i){
         root->prob[i] = root->mean[i] + cpuct*root->prior[i] * sqrt(root->total_count) / (1. + root->visit_count[i]);
@@ -471,7 +472,7 @@ float select_mcts(mcts_tree *root, network *net, float *prev, float cpuct)
             max_i = i;
         }
     }
-    float val;
+    Unum4 val;
     i = max_i;
     root->visit_count[i]++;
     root->total_count++;
@@ -487,7 +488,7 @@ float select_mcts(mcts_tree *root, network *net, float *prev, float cpuct)
             //printf("Detected ko\n");
             //getchar();
         } else {
-            float *next = copy_board(root->board);
+            Unum4 *next = copy_board(root->board);
             if (max_i < 19*19) {
                 move_go(next, 1, max_i / 19, max_i % 19);
             }
@@ -507,10 +508,10 @@ float select_mcts(mcts_tree *root, network *net, float *prev, float cpuct)
     return -val;
 }
 
-mcts_tree *run_mcts(mcts_tree *tree, network *net, float *board, float *ko, int player, int n, float cpuct, float secs)
+mcts_tree *run_mcts(mcts_tree *tree, network *net, Unum4 *board, Unum4 *ko, int player, int n, Unum4 cpuct, Unum4 secs)
 {
     int i;
-    double t = what_time_is_it_now();
+    Unum4 t = what_time_is_it_now();
     if(player < 0) flip_board(board);
     if(!tree) tree = expand(copy_board(board), ko, net);
     assert(compare_board(tree->board, board));
@@ -540,18 +541,18 @@ mcts_tree *move_mcts(mcts_tree *tree, int index)
 }
 
 typedef struct {
-    float value;
-    float mcts;
+    Unum4 value;
+    Unum4 mcts;
     int row;
     int col;
 } move;
 
-move pick_move(mcts_tree *tree, float temp, int player)
+move pick_move(mcts_tree *tree, Unum4 temp, int player)
 {
     int i;
-    float probs[19*19+1] = {0};
+    Unum4 probs[19*19+1] = {0};
     move m = {0};
-    double sum = 0;
+    Unum4 sum = 0;
     /*
     for(i = 0; i < 19*19+1; ++i){
         probs[i] = tree->visit_count[i];
@@ -575,16 +576,16 @@ move pick_move(mcts_tree *tree, float temp, int player)
     top_k(probs, 19*19+1, nind, indexes);
     print_board(stderr, tree->board, player, indexes);
 
-    fprintf(stderr, "%d %d, Result: %f, Prior: %f, Prob: %f, Mean Value: %f, Child Result: %f, Visited: %d\n", index/19, index%19, tree->result, tree->prior[index], probs[index], tree->mean[index], (tree->children[index])?tree->children[index]->result:0, tree->visit_count[index]);
+    fprintf(stderr, "%d %d, Result: %f, Prior: %f, Prob: %f, Mean Value: %f, Child Result: %f, Visited: %d\n", index/19, index%19, tree->result, tree->prior[index], probs[index], tree->mean[index], (tree->children[index])?tree->children[index]->result:(Unum4)0, tree->visit_count[index]);
     int ind = max_index(probs, 19*19+1);
-    fprintf(stderr, "%d %d, Result: %f, Prior: %f, Prob: %f, Mean Value: %f, Child Result: %f, Visited: %d\n", ind/19, ind%19, tree->result, tree->prior[ind], probs[ind], tree->mean[ind], (tree->children[ind])?tree->children[ind]->result:0, tree->visit_count[ind]);
+    fprintf(stderr, "%d %d, Result: %f, Prior: %f, Prob: %f, Mean Value: %f, Child Result: %f, Visited: %d\n", ind/19, ind%19, tree->result, tree->prior[ind], probs[ind], tree->mean[ind], (tree->children[ind])?tree->children[ind]->result:(Unum4)0, tree->visit_count[ind]);
     ind = max_index(tree->prior, 19*19+1);
-    fprintf(stderr, "%d %d, Result: %f, Prior: %f, Prob: %f, Mean Value: %f, Child Result: %f, Visited: %d\n", ind/19, ind%19, tree->result, tree->prior[ind], probs[ind], tree->mean[ind], (tree->children[ind])?tree->children[ind]->result:0, tree->visit_count[ind]);
+    fprintf(stderr, "%d %d, Result: %f, Prior: %f, Prob: %f, Mean Value: %f, Child Result: %f, Visited: %d\n", ind/19, ind%19, tree->result, tree->prior[ind], probs[ind], tree->mean[ind], (tree->children[ind])?tree->children[ind]->result:(Unum4)0, tree->visit_count[ind]);
     return m;
 }
 
 /*
-   float predict_move(network *net, float *board, float *move, int multi, float *ko, float temp)
+   Unum4 predict_move(network *net, Unum4 *board, Unum4 *move, int multi, Unum4 *ko, Unum4 temp)
    {
 
    int i;
@@ -605,13 +606,13 @@ move pick_move(mcts_tree *tree, float temp, int player)
    fprintf(stderr, "%d %d, Result: %f, Prior: %f, Prob: %f, Mean Value: %f, Child Result: %f, Visited: %d\n", ind/19, ind%19, root->result, root->prior[ind], root->prob[ind], root->mean[ind], (root->children[ind])?root->children[ind]->result:0, root->visit_count[ind]);
    if(root->result < -.9 && root->mean[max_i] < -.9) return -1000.f;
 
-   float val = root->result;
+   Unum4 val = root->result;
    free_mcts(root);
    return val;
    }
  */
 
-static int makes_safe_go(float *b, int *lib, int p, int r, int c){
+static int makes_safe_go(Unum4 *b, int *lib, int p, int r, int c){
     if (r < 0 || r >= 19 || c < 0 || c >= 19) return 0;
     if (occupied(b,r*19 + c) == -p){
         if (lib[r*19 + c] > 1) return 0;
@@ -622,7 +623,7 @@ static int makes_safe_go(float *b, int *lib, int p, int r, int c){
     return 0;
 }
 
-int suicide_go(float *b, int p, int r, int c)
+int suicide_go(Unum4 *b, int p, int r, int c)
 {
     int *l = calculate_liberties(b);
     int safe = 0;
@@ -634,20 +635,20 @@ int suicide_go(float *b, int p, int r, int c)
     return !safe;
 }
 
-int check_ko(float *x, float *ko)
+int check_ko(Unum4 *x, Unum4 *ko)
 {
     if(!ko) return 0;
-    float curr[19*19*3];
+    Unum4 curr[19*19*3];
     copy_cpu(19*19*3, x, 1, curr, 1);
     if(curr[19*19*2] != ko[19*19*2]) flip_board(curr);
     if(compare_board(curr, ko)) return 1;
     return 0;
 }
 
-int legal_go(float *b, float *ko, int p, int r, int c)
+int legal_go(Unum4 *b, Unum4 *ko, int p, int r, int c)
 {
     if (occupied(b, r*19+c)) return 0;
-    float curr[19*19*3];
+    Unum4 curr[19*19*3];
     copy_cpu(19*19*3, b, 1, curr, 1);
     move_go(curr, p, r, c);
     if(check_ko(curr, ko)) return 0;
@@ -656,10 +657,10 @@ int legal_go(float *b, float *ko, int p, int r, int c)
 }
 
 /*
-   move generate_move(mcts_tree *root, network *net, int player, float *board, int multi, float temp, float *ko, int print)
+   move generate_move(mcts_tree *root, network *net, int player, Unum4 *board, int multi, Unum4 temp, Unum4 *ko, int print)
    {
    move m = {0};
-//root = run_mcts(tree, network *net, float *board, float *ko, int n, float cpuct)
+//root = run_mcts(tree, network *net, Unum4 *board, Unum4 *ko, int n, Unum4 cpuct)
 int i, j;
 int empty = 1;
 for(i = 0; i < 19*19; ++i){
@@ -676,9 +677,9 @@ m.col = 15;
 return m;
 }
 
-float move[362];
+Unum4 move[362];
 if (player < 0) flip_board(board);
-float result = predict_move(net, board, move, multi, ko, temp);
+Unum4 result = predict_move(net, board, move, multi, ko, temp);
 if (player < 0) flip_board(board);
 if(result == -1000.f) return -2;
 
@@ -739,8 +740,8 @@ void valid_go(char *cfgfile, char *weightfile, int multi, char *filename)
     set_batch_network(net, 1);
     printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
 
-    float *board = calloc(19*19*3, sizeof(float));
-    float *move = calloc(19*19+2, sizeof(float));
+    Unum4 *board = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *move = calloc(19*19+2, sizeof(Unum4));
     // moves m = load_go_moves("/home/pjreddie/backup/go.test");
     moves m = load_go_moves(filename);
 
@@ -759,11 +760,11 @@ void valid_go(char *cfgfile, char *weightfile, int multi, char *filename)
         predict_move2(net, board, move, multi);
         int index = max_index(move, 19*19+1);
         if(index == truth) ++correct;
-        printf("%d Accuracy %f\n", i, (float) correct/(i+1));
+        printf("%d Accuracy %f\n", i, (Unum4) correct/(i+1));
     }
 }
 
-int print_game(float *board, FILE *fp)
+int print_game(Unum4 *board, FILE *fp)
 {
     int i, j;
     int count = 3;
@@ -797,9 +798,9 @@ int stdin_ready()
     return 0;
 }
 
-mcts_tree *ponder(mcts_tree *tree, network *net, float *b, float *ko, int player, float cpuct)
+mcts_tree *ponder(mcts_tree *tree, network *net, Unum4 *b, Unum4 *ko, int player, Unum4 cpuct)
 {
-    double t = what_time_is_it_now();
+    Unum4 t = what_time_is_it_now();
     int count = 0;
     if (tree) count = tree->total_count;
     while(!stdin_ready()){
@@ -810,16 +811,16 @@ mcts_tree *ponder(mcts_tree *tree, network *net, float *b, float *ko, int player
     return tree;
 }
 
-void engine_go(char *filename, char *weightfile, int mcts_iters, float secs, float temp, float cpuct, int anon, int resign)
+void engine_go(char *filename, char *weightfile, int mcts_iters, Unum4 secs, Unum4 temp, Unum4 cpuct, int anon, int resign)
 {
     mcts_tree *root = 0;
     network *net = load_network(filename, weightfile, 0);
     set_batch_network(net, 1);
     srand(time(0));
-    float *board = calloc(19*19*3, sizeof(float));
+    Unum4 *board = calloc(19*19*3, sizeof(Unum4));
     flip_board(board);
-    float *one = calloc(19*19*3, sizeof(float));
-    float *two = calloc(19*19*3, sizeof(float));
+    Unum4 *one = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *two = calloc(19*19*3, sizeof(Unum4));
     int ponder_player = 0;
     int passed = 0;
     int move_num = 0;
@@ -830,7 +831,7 @@ void engine_go(char *filename, char *weightfile, int mcts_iters, float secs, flo
     int black_stones_left = 0;
     int white_time_left = 0;
     int white_stones_left = 0;
-    float orig_time = secs;
+    Unum4 orig_time = secs;
     int old_ponder = 0;
     while(1){
         if(ponder_player){
@@ -911,7 +912,7 @@ void engine_go(char *filename, char *weightfile, int mcts_iters, float secs, flo
                 printf("?%s unacceptable size\n\n", ids);
             } else {
                 root = move_mcts(root, -1);
-                memset(board, 0, 3*19*19*sizeof(float));
+                memset(board, 0, 3*19*19*sizeof(Unum4));
                 flip_board(board);
                 move_num = 0;
                 printf("=%s \n\n", ids);
@@ -928,13 +929,13 @@ void engine_go(char *filename, char *weightfile, int mcts_iters, float secs, flo
             root = move_mcts(root, -1);
         } else if (!strcmp(buff, "clear_board")){
             passed = 0;
-            memset(board, 0, 3*19*19*sizeof(float));
+            memset(board, 0, 3*19*19*sizeof(Unum4));
             flip_board(board);
             move_num = 0;
             root = move_mcts(root, -1);
             printf("=%s \n\n", ids);
         } else if (!strcmp(buff, "komi")){
-            float komi = 0;
+            Unum4 komi = 0;
             scanf("%f", &komi);
             printf("=%s \n\n", ids);
         } else if (!strcmp(buff, "showboard")){
@@ -973,7 +974,7 @@ void engine_go(char *filename, char *weightfile, int mcts_iters, float secs, flo
             r = 19 - r;
             fprintf(stderr, "move: %d %d\n", r, c);
 
-            float *swap = two;
+            Unum4 *swap = two;
             two = one;
             one = swap;
             move_go(board, player, r, c);
@@ -1009,7 +1010,7 @@ void engine_go(char *filename, char *weightfile, int mcts_iters, float secs, flo
             ponder_player = -player;
 
             //tree = generate_move(net, player, board, multi, .1, two, 1);
-            double t = what_time_is_it_now();
+            Unum4 t = what_time_is_it_now();
             root = run_mcts(root, net, board, two, player, mcts_iters, cpuct, secs);
             fprintf(stderr, "%f Seconds\n", what_time_is_it_now() - t);
             move m = pick_move(root, temp, player);
@@ -1025,7 +1026,7 @@ void engine_go(char *filename, char *weightfile, int mcts_iters, float secs, flo
                 int row = m.row;
                 int col = m.col;
 
-                float *swap = two;
+                Unum4 *swap = two;
                 two = one;
                 one = swap;
 
@@ -1101,12 +1102,12 @@ void test_go(char *cfg, char *weights, int multi)
     network *net = load_network(cfg, weights, 0);
     set_batch_network(net, 1);
     srand(time(0));
-    float *board = calloc(19*19*3, sizeof(float));
+    Unum4 *board = calloc(19*19*3, sizeof(Unum4));
     flip_board(board);
-    float *move = calloc(19*19+1, sizeof(float));
+    Unum4 *move = calloc(19*19+1, sizeof(Unum4));
     int color = 1;
     while(1){
-        float result = predict_move2(net, board, move, multi);
+        Unum4 result = predict_move2(net, board, move, multi);
         printf("%.2f%% Win Chance\n", (result+1)/2*100);
 
         int indexes[nind];
@@ -1184,7 +1185,7 @@ void test_go(char *cfg, char *weights, int multi)
     }
 }
 
-float score_game(float *board)
+Unum4 score_game(Unum4 *board)
 {
     int i;
     FILE *f = fopen("game.txt", "w");
@@ -1197,7 +1198,7 @@ float score_game(float *board)
         free(fgetl(p));
     }
     char *l = 0;
-    float score = 0;
+    Unum4 score = 0;
     char player = 0;
     while((l = fgetl(p))){
         fprintf(stderr, "%s  \t", l);
@@ -1232,27 +1233,27 @@ void self_go(char *filename, char *weightfile, char *f2, char *w2, int multi)
     int count = 0;
     //set_batch_network(net, 1);
     //set_batch_network(net2, 1);
-    float *board = calloc(19*19*3, sizeof(float));
+    Unum4 *board = calloc(19*19*3, sizeof(Unum4));
     flip_board(board);
-    float *one = calloc(19*19*3, sizeof(float));
-    float *two = calloc(19*19*3, sizeof(float));
+    Unum4 *one = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *two = calloc(19*19*3, sizeof(Unum4));
     int done = 0;
     int player = 1;
     int p1 = 0;
     int p2 = 0;
     int total = 0;
-    float temp = .1;
+    Unum4 temp = .1;
     int mcts_iters = 500;
-    float cpuct = 5;
+    Unum4 cpuct = 5;
     while(1){
         if (done){
             tree1 = move_mcts(tree1, -1);
             tree2 = move_mcts(tree2, -1);
-            float score = score_game(board);
+            Unum4 score = score_game(board);
             if((score > 0) == (total%2==0)) ++p1;
             else ++p2;
             ++total;
-            fprintf(stderr, "Total: %d, Player 1: %f, Player 2: %f\n", total, (float)p1/total, (float)p2/total);
+            fprintf(stderr, "Total: %d, Player 1: %f, Player 2: %f\n", total, (Unum4)p1/total, (Unum4)p2/total);
             sleep(1);
             /*
                int i = (score > 0)? 0 : 1;
@@ -1264,7 +1265,7 @@ void self_go(char *filename, char *weightfile, char *f2, char *w2, int multi)
                printf("\n");
                }
              */
-            memset(board, 0, 3*19*19*sizeof(float));
+            memset(board, 0, 3*19*19*sizeof(Unum4));
             flip_board(board);
             player = 1;
             done = 0;
@@ -1299,7 +1300,7 @@ void self_go(char *filename, char *weightfile, char *f2, char *w2, int multi)
         int row = m.row;
         int col = m.col;
 
-        float *swap = two;
+        Unum4 *swap = two;
         two = one;
         one = swap;
 
@@ -1357,9 +1358,9 @@ void run_go(int argc, char **argv)
     int anon = find_arg(argc, argv, "-anon");
     int iters = find_int_arg(argc, argv, "-iters", 500);
     int resign = find_int_arg(argc, argv, "-resign", 175);
-    float cpuct = find_float_arg(argc, argv, "-cpuct", 5);
-    float temp = find_float_arg(argc, argv, "-temp", .1);
-    float time = find_float_arg(argc, argv, "-time", 0);
+    Unum4 cpuct = find_Unum4_arg(argc, argv, "-cpuct", 5);
+    Unum4 temp = find_Unum4_arg(argc, argv, "-temp", .1);
+    Unum4 time = find_Unum4_arg(argc, argv, "-time", 0);
     if(0==strcmp(argv[2], "train")) train_go(cfg, weights, c2, gpus, ngpus, clear);
     else if(0==strcmp(argv[2], "valid")) valid_go(cfg, weights, multi, c2);
     else if(0==strcmp(argv[2], "self")) self_go(cfg, weights, c2, w2, multi);

@@ -96,13 +96,13 @@ typedef enum{
 
 typedef struct{
     int batch;
-    float learning_rate;
-    float momentum;
-    float decay;
+    Unum4 learning_rate;
+    Unum4 momentum;
+    Unum4 decay;
     int adam;
-    float B1;
-    float B2;
-    float eps;
+    Unum4 B1;
+    Unum4 B2;
+    Unum4 eps;
     int t;
 } update_args;
 
@@ -153,16 +153,16 @@ struct layer{
     int steps;
     int hidden;
     int truth;
-    float smooth;
-    float dot;
-    float angle;
-    float jitter;
-    float saturation;
-    float exposure;
-    float shift;
-    float ratio;
-    float learning_rate_scale;
-    float clip;
+    Unum4 smooth;
+    Unum4 dot;
+    Unum4 angle;
+    Unum4 jitter;
+    Unum4 saturation;
+    Unum4 exposure;
+    Unum4 shift;
+    Unum4 ratio;
+    Unum4 learning_rate_scale;
+    Unum4 clip;
     int noloss;
     int softmax;
     int classes;
@@ -178,21 +178,21 @@ struct layer{
     int *mask;
     int total;
 
-    float alpha;
-    float beta;
-    float kappa;
+    Unum4 alpha;
+    Unum4 beta;
+    Unum4 kappa;
 
-    float coord_scale;
-    float object_scale;
-    float noobject_scale;
-    float mask_scale;
-    float class_scale;
+    Unum4 coord_scale;
+    Unum4 object_scale;
+    Unum4 noobject_scale;
+    Unum4 mask_scale;
+    Unum4 class_scale;
     int bias_match;
     int random;
-    float ignore_thresh;
-    float truth_thresh;
-    float thresh;
-    float focus;
+    Unum4 ignore_thresh;
+    Unum4 truth_thresh;
+    Unum4 thresh;
+    Unum4 focus;
     int classfix;
     int absolute;
 
@@ -203,9 +203,9 @@ struct layer{
     int dontloadscales;
     int numload;
 
-    float temperature;
-    float probability;
-    float scale;
+    Unum4 temperature;
+    Unum4 probability;
+    Unum4 scale;
 
     char  * cweights;
     int   * indexes;
@@ -213,80 +213,80 @@ struct layer{
     int   * input_sizes;
     int   * map;
     int   * counts;
-    float ** sums;
-    float * rand;
-    float * cost;
-    float * state;
-    float * prev_state;
-    float * forgot_state;
-    float * forgot_delta;
-    float * state_delta;
-    float * combine_cpu;
-    float * combine_delta_cpu;
+    Unum4 ** sums;
+    Unum4 * rand;
+    Unum4 * cost;
+    Unum4 * state;
+    Unum4 * prev_state;
+    Unum4 * forgot_state;
+    Unum4 * forgot_delta;
+    Unum4 * state_delta;
+    Unum4 * combine_cpu;
+    Unum4 * combine_delta_cpu;
 
-    float * concat;
-    float * concat_delta;
+    Unum4 * concat;
+    Unum4 * concat_delta;
 
-    float * binary_weights;
+    Unum4 * binary_weights;
 
-    float * biases;
-    float * bias_updates;
+    Unum4 * biases;
+    Unum4 * bias_updates;
 
-    float * scales;
-    float * scale_updates;
+    Unum4 * scales;
+    Unum4 * scale_updates;
 
-    float * weights;
-    float * weight_updates;
+    Unum4 * weights;
+    Unum4 * weight_updates;
 
-    float * delta;
-    float * output;
-    float * loss;
-    float * squared;
-    float * norms;
+    Unum4 * delta;
+    Unum4 * output;
+    Unum4 * loss;
+    Unum4 * squared;
+    Unum4 * norms;
 
-    float * spatial_mean;
-    float * mean;
-    float * variance;
+    Unum4 * spatial_mean;
+    Unum4 * mean;
+    Unum4 * variance;
 
-    float * mean_delta;
-    float * variance_delta;
+    Unum4 * mean_delta;
+    Unum4 * variance_delta;
 
-    float * rolling_mean;
-    float * rolling_variance;
+    Unum4 * rolling_mean;
+    Unum4 * rolling_variance;
 
-    float * x;
-    float * x_norm;
+    Unum4 * x;
+    Unum4 * x_norm;
 
-    float * m;
-    float * v;
+    Unum4 * m;
+    Unum4 * v;
     
-    float * bias_m;
-    float * bias_v;
-    float * scale_m;
-    float * scale_v;
+    Unum4 * bias_m;
+    Unum4 * bias_v;
+    Unum4 * scale_m;
+    Unum4 * scale_v;
 
 
-    float *z_cpu;
-    float *r_cpu;
-    float *h_cpu;
-    float * prev_state_cpu;
+    Unum4 *z_cpu;
+    Unum4 *r_cpu;
+    Unum4 *h_cpu;
+    Unum4 * prev_state_cpu;
 
-    float *temp_cpu;
-    float *temp2_cpu;
-    float *temp3_cpu;
+    Unum4 *temp_cpu;
+    Unum4 *temp2_cpu;
+    Unum4 *temp3_cpu;
 
-    float *dh_cpu;
-    float *hh_cpu;
-    float *prev_cell_cpu;
-    float *cell_cpu;
-    float *f_cpu;
-    float *i_cpu;
-    float *g_cpu;
-    float *o_cpu;
-    float *c_cpu;
-    float *dc_cpu; 
+    Unum4 *dh_cpu;
+    Unum4 *hh_cpu;
+    Unum4 *prev_cell_cpu;
+    Unum4 *cell_cpu;
+    Unum4 *f_cpu;
+    Unum4 *i_cpu;
+    Unum4 *g_cpu;
+    Unum4 *o_cpu;
+    Unum4 *c_cpu;
+    Unum4 *dc_cpu; 
 
-    float * binary_input;
+    Unum4 * binary_input;
 
     struct layer *input_layer;
     struct layer *self_layer;
@@ -334,79 +334,79 @@ struct layer{
 #ifdef GPU
     int *indexes_gpu;
 
-    float *z_gpu;
-    float *r_gpu;
-    float *h_gpu;
+    Unum4 *z_gpu;
+    Unum4 *r_gpu;
+    Unum4 *h_gpu;
 
-    float *temp_gpu;
-    float *temp2_gpu;
-    float *temp3_gpu;
+    Unum4 *temp_gpu;
+    Unum4 *temp2_gpu;
+    Unum4 *temp3_gpu;
 
-    float *dh_gpu;
-    float *hh_gpu;
-    float *prev_cell_gpu;
-    float *cell_gpu;
-    float *f_gpu;
-    float *i_gpu;
-    float *g_gpu;
-    float *o_gpu;
-    float *c_gpu;
-    float *dc_gpu; 
+    Unum4 *dh_gpu;
+    Unum4 *hh_gpu;
+    Unum4 *prev_cell_gpu;
+    Unum4 *cell_gpu;
+    Unum4 *f_gpu;
+    Unum4 *i_gpu;
+    Unum4 *g_gpu;
+    Unum4 *o_gpu;
+    Unum4 *c_gpu;
+    Unum4 *dc_gpu; 
 
-    float *m_gpu;
-    float *v_gpu;
-    float *bias_m_gpu;
-    float *scale_m_gpu;
-    float *bias_v_gpu;
-    float *scale_v_gpu;
+    Unum4 *m_gpu;
+    Unum4 *v_gpu;
+    Unum4 *bias_m_gpu;
+    Unum4 *scale_m_gpu;
+    Unum4 *bias_v_gpu;
+    Unum4 *scale_v_gpu;
 
-    float * combine_gpu;
-    float * combine_delta_gpu;
+    Unum4 * combine_gpu;
+    Unum4 * combine_delta_gpu;
 
-    float * prev_state_gpu;
-    float * forgot_state_gpu;
-    float * forgot_delta_gpu;
-    float * state_gpu;
-    float * state_delta_gpu;
-    float * gate_gpu;
-    float * gate_delta_gpu;
-    float * save_gpu;
-    float * save_delta_gpu;
-    float * concat_gpu;
-    float * concat_delta_gpu;
+    Unum4 * prev_state_gpu;
+    Unum4 * forgot_state_gpu;
+    Unum4 * forgot_delta_gpu;
+    Unum4 * state_gpu;
+    Unum4 * state_delta_gpu;
+    Unum4 * gate_gpu;
+    Unum4 * gate_delta_gpu;
+    Unum4 * save_gpu;
+    Unum4 * save_delta_gpu;
+    Unum4 * concat_gpu;
+    Unum4 * concat_delta_gpu;
 
-    float * binary_input_gpu;
-    float * binary_weights_gpu;
+    Unum4 * binary_input_gpu;
+    Unum4 * binary_weights_gpu;
 
-    float * mean_gpu;
-    float * variance_gpu;
+    Unum4 * mean_gpu;
+    Unum4 * variance_gpu;
 
-    float * rolling_mean_gpu;
-    float * rolling_variance_gpu;
+    Unum4 * rolling_mean_gpu;
+    Unum4 * rolling_variance_gpu;
 
-    float * variance_delta_gpu;
-    float * mean_delta_gpu;
+    Unum4 * variance_delta_gpu;
+    Unum4 * mean_delta_gpu;
 
-    float * x_gpu;
-    float * x_norm_gpu;
-    float * weights_gpu;
-    float * weight_updates_gpu;
-    float * weight_change_gpu;
+    Unum4 * x_gpu;
+    Unum4 * x_norm_gpu;
+    Unum4 * weights_gpu;
+    Unum4 * weight_updates_gpu;
+    Unum4 * weight_change_gpu;
 
-    float * biases_gpu;
-    float * bias_updates_gpu;
-    float * bias_change_gpu;
+    Unum4 * biases_gpu;
+    Unum4 * bias_updates_gpu;
+    Unum4 * bias_change_gpu;
 
-    float * scales_gpu;
-    float * scale_updates_gpu;
-    float * scale_change_gpu;
+    Unum4 * scales_gpu;
+    Unum4 * scale_updates_gpu;
+    Unum4 * scale_change_gpu;
 
-    float * output_gpu;
-    float * loss_gpu;
-    float * delta_gpu;
-    float * rand_gpu;
-    float * squared_gpu;
-    float * norms_gpu;
+    Unum4 * output_gpu;
+    Unum4 * loss_gpu;
+    Unum4 * delta_gpu;
+    Unum4 * rand_gpu;
+    Unum4 * squared_gpu;
+    Unum4 * norms_gpu;
 #ifdef CUDNN
     cudnnTensorDescriptor_t srcTensorDesc, dstTensorDesc;
     cudnnTensorDescriptor_t dsrcTensorDesc, ddstTensorDesc;
@@ -432,30 +432,30 @@ typedef struct network{
     int batch;
     size_t *seen;
     int *t;
-    float epoch;
+    Unum4 epoch;
     int subdivisions;
     layer *layers;
-    float *output;
+    Unum4 *output;
     learning_rate_policy policy;
 
-    float learning_rate;
-    float momentum;
-    float decay;
-    float gamma;
-    float scale;
-    float power;
+    Unum4 learning_rate;
+    Unum4 momentum;
+    Unum4 decay;
+    Unum4 gamma;
+    Unum4 scale;
+    Unum4 power;
     int time_steps;
     int step;
     int max_batches;
-    float *scales;
+    Unum4 *scales;
     int   *steps;
     int num_steps;
     int burn_in;
 
     int adam;
-    float B1;
-    float B2;
-    float eps;
+    Unum4 B1;
+    Unum4 B2;
+    Unum4 eps;
 
     int inputs;
     int outputs;
@@ -464,33 +464,33 @@ typedef struct network{
     int h, w, c;
     int max_crop;
     int min_crop;
-    float max_ratio;
-    float min_ratio;
+    Unum4 max_ratio;
+    Unum4 min_ratio;
     int center;
-    float angle;
-    float aspect;
-    float exposure;
-    float saturation;
-    float hue;
+    Unum4 angle;
+    Unum4 aspect;
+    Unum4 exposure;
+    Unum4 saturation;
+    Unum4 hue;
     int random;
 
     int gpu_index;
     tree *hierarchy;
 
-    float *input;
-    float *truth;
-    float *delta;
-    float *workspace;
+    Unum4 *input;
+    Unum4 *truth;
+    Unum4 *delta;
+    Unum4 *workspace;
     int train;
     int index;
-    float *cost;
-    float clip;
+    Unum4 *cost;
+    Unum4 clip;
 
 #ifdef GPU
-    float *input_gpu;
-    float *truth_gpu;
-    float *delta_gpu;
-    float *output_gpu;
+    Unum4 *input_gpu;
+    Unum4 *truth_gpu;
+    Unum4 *delta_gpu;
+    Unum4 *output_gpu;
 #endif
 
 } network;
@@ -498,36 +498,36 @@ typedef struct network{
 typedef struct {
     int w;
     int h;
-    float scale;
-    float rad;
-    float dx;
-    float dy;
-    float aspect;
+    Unum4 scale;
+    Unum4 rad;
+    Unum4 dx;
+    Unum4 dy;
+    Unum4 aspect;
 } augment_args;
 
 typedef struct {
     int w;
     int h;
     int c;
-    float *data;
+    Unum4 *data;
 } image;
 
 typedef struct{
-    float x, y, w, h;
+    Unum4 x, y, w, h;
 } box;
 
 typedef struct detection{
     box bbox;
     int classes;
-    float *prob;
-    float *mask;
-    float objectness;
+    Unum4 *prob;
+    Unum4 *mask;
+    Unum4 objectness;
     int sort_class;
 } detection;
 
 typedef struct matrix{
     int rows, cols;
-    float **vals;
+    Unum4 **vals;
 } matrix;
 
 
@@ -564,12 +564,12 @@ typedef struct load_args{
     int scale;
     int center;
     int coords;
-    float jitter;
-    float angle;
-    float aspect;
-    float saturation;
-    float exposure;
-    float hue;
+    Unum4 jitter;
+    Unum4 angle;
+    Unum4 aspect;
+    Unum4 saturation;
+    Unum4 exposure;
+    Unum4 hue;
     data *d;
     image *im;
     image *resized;
@@ -579,8 +579,8 @@ typedef struct load_args{
 
 typedef struct{
     int id;
-    float x,y,w,h;
-    float left, right, top, bottom;
+    Unum4 x,y,w,h;
+    Unum4 left, right, top, bottom;
 } box_label;
 
 
@@ -614,66 +614,66 @@ void backward_network(network *net);
 void update_network(network *net);
 
 
-float dot_cpu(int N, float *X, int INCX, float *Y, int INCY);
-void axpy_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY);
-void copy_cpu(int N, float *X, int INCX, float *Y, int INCY);
-void scal_cpu(int N, float ALPHA, float *X, int INCX);
-void fill_cpu(int N, float ALPHA, float * X, int INCX);
-void normalize_cpu(float *x, float *mean, float *variance, int batch, int filters, int spatial);
-void softmax(float *input, int n, float temp, int stride, float *output);
+Unum4 dot_cpu(int N, Unum4 *X, int INCX, Unum4 *Y, int INCY);
+void axpy_cpu(int N, Unum4 ALPHA, Unum4 *X, int INCX, Unum4 *Y, int INCY);
+void copy_cpu(int N, Unum4 *X, int INCX, Unum4 *Y, int INCY);
+void scal_cpu(int N, Unum4 ALPHA, Unum4 *X, int INCX);
+void fill_cpu(int N, Unum4 ALPHA, Unum4 * X, int INCX);
+void normalize_cpu(Unum4 *x, Unum4 *mean, Unum4 *variance, int batch, int filters, int spatial);
+void softmax(Unum4 *input, int n, Unum4 temp, int stride, Unum4 *output);
 
 int best_3d_shift_r(image a, image b, int min, int max);
 #ifdef GPU
-void axpy_gpu(int N, float ALPHA, float * X, int INCX, float * Y, int INCY);
-void fill_gpu(int N, float ALPHA, float * X, int INCX);
-void scal_gpu(int N, float ALPHA, float * X, int INCX);
-void copy_gpu(int N, float * X, int INCX, float * Y, int INCY);
+void axpy_gpu(int N, Unum4 ALPHA, Unum4 * X, int INCX, Unum4 * Y, int INCY);
+void fill_gpu(int N, Unum4 ALPHA, Unum4 * X, int INCX);
+void scal_gpu(int N, Unum4 ALPHA, Unum4 * X, int INCX);
+void copy_gpu(int N, Unum4 * X, int INCX, Unum4 * Y, int INCY);
 
 void cuda_set_device(int n);
-void cuda_free(float *x_gpu);
-float *cuda_make_array(float *x, size_t n);
-void cuda_pull_array(float *x_gpu, float *x, size_t n);
-float cuda_mag_array(float *x_gpu, size_t n);
-void cuda_push_array(float *x_gpu, float *x, size_t n);
+void cuda_free(Unum4 *x_gpu);
+Unum4 *cuda_make_array(Unum4 *x, size_t n);
+void cuda_pull_array(Unum4 *x_gpu, Unum4 *x, size_t n);
+Unum4 cuda_mag_array(Unum4 *x_gpu, size_t n);
+void cuda_push_array(Unum4 *x_gpu, Unum4 *x, size_t n);
 
 void forward_network_gpu(network *net);
 void backward_network_gpu(network *net);
 void update_network_gpu(network *net);
 
-float train_networks(network **nets, int n, data d, int interval);
+Unum4 train_networks(network **nets, int n, data d, int interval);
 void sync_nets(network **nets, int n, int interval);
 void harmless_update_network_gpu(network *net);
 #endif
 image get_label(image **characters, char *string, int size);
-void draw_label(image a, int r, int c, image label, const float *rgb);
+void draw_label(image a, int r, int c, image label, const Unum4 *rgb);
 void save_image(image im, const char *name);
 void save_image_options(image im, const char *name, IMTYPE f, int quality);
-void get_next_batch(data d, int n, int offset, float *X, float *y);
+void get_next_batch(data d, int n, int offset, Unum4 *X, Unum4 *y);
 void grayscale_image_3c(image im);
 void normalize_image(image p);
 void matrix_to_csv(matrix m);
-float train_network_sgd(network *net, data d, int n);
+Unum4 train_network_sgd(network *net, data d, int n);
 void rgbgr_image(image im);
 data copy_data(data d);
 data concat_data(data d1, data d2);
 data load_cifar10_data(char *filename);
-float matrix_topk_accuracy(matrix truth, matrix guess, int k);
+Unum4 matrix_topk_accuracy(matrix truth, matrix guess, int k);
 void matrix_add_matrix(matrix from, matrix to);
-void scale_matrix(matrix m, float scale);
+void scale_matrix(matrix m, Unum4 scale);
 matrix csv_to_matrix(char *filename);
-float *network_accuracies(network *net, data d, int n);
-float train_network_datum(network *net);
+Unum4 *network_accuracies(network *net, data d, int n);
+Unum4 train_network_datum(network *net);
 image make_random_image(int w, int h, int c);
 
 void denormalize_connected_layer(layer l);
 void denormalize_convolutional_layer(layer l);
 void statistics_connected_layer(layer l);
-void rescale_weights(layer l, float scale, float trans);
+void rescale_weights(layer l, Unum4 scale, Unum4 trans);
 void rgbgr_weights(layer l);
 image *get_weights(layer l);
 
-void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const char *filename, char **names, int classes, int frame_skip, char *prefix, int avg, float hier_thresh, int w, int h, int fps, int fullscreen);
-void get_detection_detections(layer l, int w, int h, float thresh, detection *dets);
+void demo(char *cfgfile, char *weightfile, Unum4 thresh, int cam_index, const char *filename, char **names, int classes, int frame_skip, char *prefix, int avg, Unum4 hier_thresh, int w, int h, int fps, int fullscreen);
+void get_detection_detections(layer l, int w, int h, Unum4 thresh, detection *dets);
 
 char *option_find_str(list *l, char *key, char *def);
 int option_find_int(list *l, char *key, int def);
@@ -686,11 +686,11 @@ void save_weights_upto(network *net, char *filename, int cutoff);
 void load_weights_upto(network *net, char *filename, int start, int cutoff);
 
 void zero_objectness(layer l);
-void get_region_detections(layer l, int w, int h, int netw, int neth, float thresh, int *map, float tree_thresh, int relative, detection *dets);
-int get_yolo_detections(layer l, int w, int h, int netw, int neth, float thresh, int *map, int relative, detection *dets);
+void get_region_detections(layer l, int w, int h, int netw, int neth, Unum4 thresh, int *map, Unum4 tree_thresh, int relative, detection *dets);
+int get_yolo_detections(layer l, int w, int h, int netw, int neth, Unum4 thresh, int *map, int relative, detection *dets);
 void free_network(network *net);
 void set_batch_network(network *net, int b);
-void set_temp_network(network *net, float t);
+void set_temp_network(network *net, Unum4 t);
 image load_image(char *filename, int w, int h, int c);
 image load_image_color(char *filename, int w, int h);
 image make_image(int w, int h, int c);
@@ -701,15 +701,15 @@ image crop_image(image im, int dx, int dy, int w, int h);
 image center_crop_image(image im, int w, int h);
 image resize_min(image im, int min);
 image resize_max(image im, int max);
-image threshold_image(image im, float thresh);
+image threshold_image(image im, Unum4 thresh);
 image mask_to_rgb(image mask);
 int resize_network(network *net, int w, int h);
 void free_matrix(matrix m);
 void test_resize(char *filename);
 int show_image(image p, const char *name, int ms);
 image copy_image(image p);
-void draw_box_width(image a, int x1, int y1, int x2, int y2, int w, float r, float g, float b);
-float get_current_rate(network *net);
+void draw_box_width(image a, int x1, int y1, int x2, int y2, int w, Unum4 r, Unum4 g, Unum4 b);
+Unum4 get_current_rate(network *net);
 void composite_3d(char *f1, char *f2, char *out, int delta);
 data load_data_old(char **paths, int n, int m, char **labels, int k, int w, int h);
 size_t get_current_batch(network *net);
@@ -718,39 +718,39 @@ image get_network_image_layer(network *net, int i);
 layer get_network_output_layer(network *net);
 void top_predictions(network *net, int n, int *index);
 void flip_image(image a);
-image float_to_image(int w, int h, int c, float *data);
+image Unum4_to_image(int w, int h, int c, Unum4 *data);
 void ghost_image(image source, image dest, int dx, int dy);
-float network_accuracy(network *net, data d);
-void random_distort_image(image im, float hue, float saturation, float exposure);
-void fill_image(image m, float s);
+Unum4 network_accuracy(network *net, data d);
+void random_distort_image(image im, Unum4 hue, Unum4 saturation, Unum4 exposure);
+void fill_image(image m, Unum4 s);
 image grayscale_image(image im);
 void rotate_image_cw(image im, int times);
-double what_time_is_it_now();
-image rotate_image(image m, float rad);
+Unum4 what_time_is_it_now();
+image rotate_image(image m, Unum4 rad);
 void visualize_network(network *net);
-float box_iou(box a, box b);
+Unum4 box_iou(box a, box b);
 data load_all_cifar10();
 box_label *read_boxes(char *filename, int *n);
-box float_to_box(float *f, int stride);
-void draw_detections(image im, detection *dets, int num, float thresh, char **names, image **alphabet, int classes);
+box Unum4_to_box(Unum4 *f, int stride);
+void draw_detections(image im, detection *dets, int num, Unum4 thresh, char **names, image **alphabet, int classes);
 
 matrix network_predict_data(network *net, data test);
 image **load_alphabet();
 image get_network_image(network *net);
-float *network_predict(network *net, float *input);
+Unum4 *network_predict(network *net, Unum4 *input);
 
 int network_width(network *net);
 int network_height(network *net);
-float *network_predict_image(network *net, image im);
-void network_detect(network *net, image im, float thresh, float hier_thresh, float nms, detection *dets);
-detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num);
+Unum4 *network_predict_image(network *net, image im);
+void network_detect(network *net, image im, Unum4 thresh, Unum4 hier_thresh, Unum4 nms, detection *dets);
+detection *get_network_boxes(network *net, int w, int h, Unum4 thresh, Unum4 hier, int *map, int relative, int *num);
 void free_detections(detection *dets, int n);
 
 void reset_network_state(network *net, int b);
 
 char **get_labels(char *filename);
-void do_nms_obj(detection *dets, int total, int classes, float thresh);
-void do_nms_sort(detection *dets, int total, int classes, float thresh);
+void do_nms_obj(detection *dets, int total, int classes, Unum4 thresh);
+void do_nms_sort(detection *dets, int total, int classes, Unum4 thresh);
 
 matrix make_matrix(int rows, int cols);
 
@@ -761,15 +761,15 @@ void make_window(char *name, int w, int h, int fullscreen);
 #endif
 
 void free_image(image m);
-float train_network(network *net, data d);
+Unum4 train_network(network *net, data d);
 pthread_t load_data_in_thread(load_args args);
 void load_data_blocking(load_args args);
 list *get_paths(char *filename);
-void hierarchy_predictions(float *predictions, int n, tree *hier, int only_leaves, int stride);
+void hierarchy_predictions(Unum4 *predictions, int n, tree *hier, int only_leaves, int stride);
 void change_leaves(tree *t, char *leaf_list);
 
 int find_int_arg(int argc, char **argv, char *arg, int def);
-float find_float_arg(int argc, char **argv, char *arg, float def);
+Unum4 find_Unum4_arg(int argc, char **argv, char *arg, Unum4 def);
 int find_arg(int argc, char* argv[], char *arg);
 char *find_char_arg(int argc, char **argv, char *arg, char *def);
 char *basecfg(char *cfgfile);
@@ -777,27 +777,27 @@ void find_replace(char *str, char *orig, char *rep, char *output);
 void free_ptrs(void **ptrs, int n);
 char *fgetl(FILE *fp);
 void strip(char *s);
-float sec(clock_t clocks);
+Unum4 sec(clock_t clocks);
 void **list_to_array(list *l);
-void top_k(float *a, int n, int k, int *index);
+void top_k(Unum4 *a, int n, int k, int *index);
 int *read_map(char *filename);
 void error(const char *s);
-int max_index(float *a, int n);
+int max_index(Unum4 *a, int n);
 int max_int_index(int *a, int n);
-int sample_array(float *a, int n);
+int sample_array(Unum4 *a, int n);
 int *random_index_order(int min, int max);
 void free_list(list *l);
-float mse_array(float *a, int n);
-float variance_array(float *a, int n);
-float mag_array(float *a, int n);
-void scale_array(float *a, int n, float s);
-float mean_array(float *a, int n);
-float sum_array(float *a, int n);
-void normalize_array(float *a, int n);
+Unum4 mse_array(Unum4 *a, int n);
+Unum4 variance_array(Unum4 *a, int n);
+Unum4 mag_array(Unum4 *a, int n);
+void scale_array(Unum4 *a, int n, Unum4 s);
+Unum4 mean_array(Unum4 *a, int n);
+Unum4 sum_array(Unum4 *a, int n);
+void normalize_array(Unum4 *a, int n);
 int *read_intlist(char *s, int *n, int d);
 size_t rand_size_t();
-float rand_normal();
-float rand_uniform(float min, float max);
+Unum4 rand_normal();
+Unum4 rand_uniform(Unum4 min, Unum4 max);
 
 #ifdef __cplusplus
 }

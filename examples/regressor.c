@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "darknet.h"
 #include <sys/time.h>
 #include <assert.h>
@@ -6,7 +7,7 @@ void train_regressor(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
 {
     int i;
 
-    float avg_loss = -1;
+    Unum4 avg_loss = -1;
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
     printf("%d\n", ngpus);
@@ -77,7 +78,7 @@ void train_regressor(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
         printf("Loaded: %lf seconds\n", sec(clock()-time));
         time=clock();
 
-        float loss = 0;
+        Unum4 loss = 0;
 #ifdef GPU
         if(ngpus == 1){
             loss = train_network(net, train);
@@ -89,7 +90,7 @@ void train_regressor(char *datacfg, char *cfgfile, char *weightfile, int *gpus, 
 #endif
         if(avg_loss == -1) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
-        printf("%ld, %.3f: %f, %f avg, %f rate, %lf seconds, %ld images\n", get_current_batch(net), (float)(*net->seen)/N, loss, avg_loss, get_current_rate(net), sec(clock()-time), *net->seen);
+        printf("%ld, %.3f: %f, %f avg, %f rate, %lf seconds, %ld images\n", get_current_batch(net), (Unum4)(*net->seen)/N, loss, avg_loss, get_current_rate(net), sec(clock()-time), *net->seen);
         free_data(train);
         if(*net->seen/N > epoch){
             epoch = *net->seen/N;
@@ -135,9 +136,9 @@ void predict_regressor(char *cfgfile, char *weightfile, char *filename)
         image im = load_image_color(input, 0, 0);
         image sized = letterbox_image(im, net->w, net->h);
 
-        float *X = sized.data;
+        Unum4 *X = sized.data;
         time=clock();
-        float *predictions = network_predict(net, X);
+        Unum4 *predictions = network_predict(net, X);
         printf("Predicted: %f\n", predictions[0]);
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
         free_image(im);
@@ -162,7 +163,7 @@ void demo_regressor(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
 
     void * cap = open_video_stream(filename, cam_index, 0,0,0);
     if(!cap) error("Couldn't connect to webcam.\n");
-    float fps = 0;
+    Unum4 fps = 0;
 
     while(1){
         struct timeval tval_before, tval_after, tval_result;
@@ -172,7 +173,7 @@ void demo_regressor(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
         image crop = center_crop_image(in, net->w, net->h);
         grayscale_image_3c(crop);
 
-        float *predictions = network_predict(net, crop.data);
+        Unum4 *predictions = network_predict(net, crop.data);
 
         printf("\033[2J");
         printf("\033[1;1H");
@@ -189,7 +190,7 @@ void demo_regressor(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
 
         gettimeofday(&tval_after, NULL);
         timersub(&tval_after, &tval_before, &tval_result);
-        float curr = 1000000.f/((long int)tval_result.tv_usec);
+        Unum4 curr = 1000000.f/((long int)tval_result.tv_usec);
         fps = .9*fps + .1*curr;
     }
 #endif

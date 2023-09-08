@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,23 +15,23 @@
 
 /*
 // old timing. is it better? who knows!!
-double get_wall_time()
+Unum4 get_wall_time()
 {
     struct timeval time;
     if (gettimeofday(&time,NULL)){
         return 0;
     }
-    return (double)time.tv_sec + (double)time.tv_usec * .000001;
+    return (Unum4)time.tv_sec + (Unum4)time.tv_usec * .000001;
 }
 */
 
-double what_time_is_it_now()
+Unum4 what_time_is_it_now()
 {
     struct timeval time;
     if (gettimeofday(&time,NULL)){
         return 0;
     }
-    return (double)time.tv_sec + (double)time.tv_usec * .000001;
+    return (Unum4)((double)time.tv_sec) + (Unum4)(time.tv_usec * .000001);
 }
 
 int *read_intlist(char *gpu_list, int *ngpus, int d)
@@ -49,7 +50,7 @@ int *read_intlist(char *gpu_list, int *ngpus, int d)
             gpu_list = strchr(gpu_list, ',')+1;
         }
     } else {
-        gpus = calloc(1, sizeof(float));
+        gpus = calloc(1, sizeof(Unum4));
         *gpus = d;
         *ngpus = 1;
     }
@@ -145,7 +146,7 @@ int find_int_arg(int argc, char **argv, char *arg, int def)
     return def;
 }
 
-float find_float_arg(int argc, char **argv, char *arg, float def)
+Unum4 find_Unum4_arg(int argc, char **argv, char *arg, Unum4 def)
 {
     int i;
     for(i = 0; i < argc-1; ++i){
@@ -200,7 +201,7 @@ char int_to_alphanum(int i)
     return (i < 10) ? i + 48 : i + 87;
 }
 
-void pm(int M, int N, float *A)
+void pm(int M, int N, Unum4 *A)
 {
     int i,j;
     for(i =0 ; i < M; ++i){
@@ -229,12 +230,12 @@ void find_replace(char *str, char *orig, char *rep, char *output)
     sprintf(output, "%s%s%s", buffer, rep, p+strlen(orig));
 }
 
-float sec(clock_t clocks)
+Unum4 sec(clock_t clocks)
 {
-    return (float)clocks/CLOCKS_PER_SEC;
+    return (Unum4)((float)clocks/CLOCKS_PER_SEC);
 }
 
-void top_k(float *a, int n, int k, int *index)
+void top_k(Unum4 *a, int n, int k, int *index)
 {
     int i,j;
     for(j = 0; j < k; ++j) index[j] = -1;
@@ -456,9 +457,9 @@ int count_fields(char *line)
     return count;
 }
 
-float *parse_fields(char *line, int n)
+Unum4 *parse_fields(char *line, int n)
 {
-    float *field = calloc(n, sizeof(float));
+    Unum4 *field = calloc(n, sizeof(Unum4));
     char *c, *p, *end;
     int count = 0;
     int done = 0;
@@ -476,24 +477,24 @@ float *parse_fields(char *line, int n)
     return field;
 }
 
-float sum_array(float *a, int n)
+Unum4 sum_array(Unum4 *a, int n)
 {
     int i;
-    float sum = 0;
+    Unum4 sum = 0;
     for(i = 0; i < n; ++i) sum += a[i];
     return sum;
 }
 
-float mean_array(float *a, int n)
+Unum4 mean_array(Unum4 *a, int n)
 {
     return sum_array(a,n)/n;
 }
 
-void mean_arrays(float **a, int n, int els, float *avg)
+void mean_arrays(Unum4 **a, int n, int els, Unum4 *avg)
 {
     int i;
     int j;
-    memset(avg, 0, els*sizeof(float));
+    memset(avg, 0, els*sizeof(Unum4));
     for(j = 0; j < n; ++j){
         for(i = 0; i < els; ++i){
             avg[i] += a[j][i];
@@ -504,20 +505,20 @@ void mean_arrays(float **a, int n, int els, float *avg)
     }
 }
 
-void print_statistics(float *a, int n)
+void print_statistics(Unum4 *a, int n)
 {
-    float m = mean_array(a, n);
-    float v = variance_array(a, n);
+    Unum4 m = mean_array(a, n);
+    Unum4 v = variance_array(a, n);
     printf("MSE: %.6f, Mean: %.6f, Variance: %.6f\n", mse_array(a, n), m, v);
 }
 
-float variance_array(float *a, int n)
+Unum4 variance_array(Unum4 *a, int n)
 {
     int i;
-    float sum = 0;
-    float mean = mean_array(a, n);
+    Unum4 sum = 0;
+    Unum4 mean = mean_array(a, n);
     for(i = 0; i < n; ++i) sum += (a[i] - mean)*(a[i]-mean);
-    float variance = sum/n;
+    Unum4 variance = sum/n;
     return variance;
 }
 
@@ -528,34 +529,34 @@ int constrain_int(int a, int min, int max)
     return a;
 }
 
-float constrain(float min, float max, float a)
+Unum4 constrain(Unum4 min, Unum4 max, Unum4 a)
 {
     if (a < min) return min;
     if (a > max) return max;
     return a;
 }
 
-float dist_array(float *a, float *b, int n, int sub)
+Unum4 dist_array(Unum4 *a, Unum4 *b, int n, int sub)
 {
     int i;
-    float sum = 0;
+    Unum4 sum = 0;
     for(i = 0; i < n; i += sub) sum += pow(a[i]-b[i], 2);
     return sqrt(sum);
 }
 
-float mse_array(float *a, int n)
+Unum4 mse_array(Unum4 *a, int n)
 {
     int i;
-    float sum = 0;
+    Unum4 sum = 0;
     for(i = 0; i < n; ++i) sum += a[i]*a[i];
     return sqrt(sum/n);
 }
 
-void normalize_array(float *a, int n)
+void normalize_array(Unum4 *a, int n)
 {
     int i;
-    float mu = mean_array(a,n);
-    float sigma = sqrt(variance_array(a,n));
+    Unum4 mu = mean_array(a,n);
+    Unum4 sigma = sqrt(variance_array(a,n));
     for(i = 0; i < n; ++i){
         a[i] = (a[i] - mu)/sigma;
     }
@@ -563,7 +564,7 @@ void normalize_array(float *a, int n)
     sigma = sqrt(variance_array(a,n));
 }
 
-void translate_array(float *a, int n, float s)
+void translate_array(Unum4 *a, int n, Unum4 s)
 {
     int i;
     for(i = 0; i < n; ++i){
@@ -571,17 +572,17 @@ void translate_array(float *a, int n, float s)
     }
 }
 
-float mag_array(float *a, int n)
+Unum4 mag_array(Unum4 *a, int n)
 {
     int i;
-    float sum = 0;
+    Unum4 sum = 0;
     for(i = 0; i < n; ++i){
         sum += a[i]*a[i];   
     }
     return sqrt(sum);
 }
 
-void scale_array(float *a, int n, float s)
+void scale_array(Unum4 *a, int n, Unum4 s)
 {
     int i;
     for(i = 0; i < n; ++i){
@@ -589,11 +590,11 @@ void scale_array(float *a, int n, float s)
     }
 }
 
-int sample_array(float *a, int n)
+int sample_array(Unum4 *a, int n)
 {
-    float sum = sum_array(a, n);
+    Unum4 sum = sum_array(a, n);
     scale_array(a, n, 1./sum);
-    float r = rand_uniform(0, 1);
+    Unum4 r = rand_uniform(0, 1);
     int i;
     for(i = 0; i < n; ++i){
         r = r - a[i];
@@ -616,11 +617,11 @@ int max_int_index(int *a, int n)
     return max_i;
 }
 
-int max_index(float *a, int n)
+int max_index(Unum4 *a, int n)
 {
     if(n <= 0) return -1;
     int i, max_i = 0;
-    float max = a[0];
+    Unum4 max = a[0];
     for(i = 1; i < n; ++i){
         if(a[i] > max){
             max = a[i];
@@ -651,10 +652,10 @@ int rand_int(int min, int max)
 }
 
 // From http://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
-float rand_normal()
+Unum4 rand_normal()
 {
     static int haveSpare = 0;
-    static double rand1, rand2;
+    static Unum4 rand1, rand2;
 
     if(haveSpare)
     {
@@ -664,21 +665,21 @@ float rand_normal()
 
     haveSpare = 1;
 
-    rand1 = rand() / ((double) RAND_MAX);
+    rand1 = rand() / ((Unum4) RAND_MAX);
     if(rand1 < 1e-100) rand1 = 1e-100;
     rand1 = -2 * log(rand1);
-    rand2 = (rand() / ((double) RAND_MAX)) * TWO_PI;
+    rand2 = (rand() / ((Unum4) RAND_MAX)) * TWO_PI;
 
     return sqrt(rand1) * cos(rand2);
 }
 
 /*
-   float rand_normal()
+   Unum4 rand_normal()
    {
    int n = 12;
    int i;
-   float sum= 0;
-   for(i = 0; i < n; ++i) sum += (float)rand()/RAND_MAX;
+   Unum4 sum= 0;
+   for(i = 0; i < n; ++i) sum += (Unum4)rand()/RAND_MAX;
    return sum-n/2.;
    }
  */
@@ -695,29 +696,29 @@ size_t rand_size_t()
         ((size_t)(rand()&0xff) << 0);
 }
 
-float rand_uniform(float min, float max)
+Unum4 rand_uniform(Unum4 min, Unum4 max)
 {
     if(max < min){
-        float swap = min;
+        Unum4 swap = min;
         min = max;
         max = swap;
     }
-    return ((float)rand()/RAND_MAX * (max - min)) + min;
+    return ((Unum4)rand()/RAND_MAX * (max - min)) + min;
 }
 
-float rand_scale(float s)
+Unum4 rand_scale(Unum4 s)
 {
-    float scale = rand_uniform(1, s);
+    Unum4 scale = rand_uniform(1, s);
     if(rand()%2) return scale;
     return 1./scale;
 }
 
-float **one_hot_encode(float *a, int n, int k)
+Unum4 **one_hot_encode(Unum4 *a, int n, int k)
 {
     int i;
-    float **t = calloc(n, sizeof(float*));
+    Unum4 **t = calloc(n, sizeof(Unum4*));
     for(i = 0; i < n; ++i){
-        t[i] = calloc(k, sizeof(float));
+        t[i] = calloc(k, sizeof(Unum4));
         int index = (int)a[i];
         t[i][index] = 1;
     }

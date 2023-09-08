@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "reorg_layer.h"
 #include "cuda.h"
 #include "blas.h"
@@ -40,8 +41,8 @@ layer make_reorg_layer(int batch, int w, int h, int c, int stride, int reverse, 
         fprintf(stderr, "reorg              /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n",  stride, w, h, c, l.out_w, l.out_h, l.out_c);
     }
     int output_size = l.outputs * batch;
-    l.output =  calloc(output_size, sizeof(float));
-    l.delta =   calloc(output_size, sizeof(float));
+    l.output =  calloc(output_size, sizeof(Unum4));
+    l.delta =   calloc(output_size, sizeof(Unum4));
 
     l.forward = forward_reorg_layer;
     l.backward = backward_reorg_layer;
@@ -77,8 +78,8 @@ void resize_reorg_layer(layer *l, int w, int h)
     l->inputs = l->outputs;
     int output_size = l->outputs * l->batch;
 
-    l->output = realloc(l->output, output_size * sizeof(float));
-    l->delta = realloc(l->delta, output_size * sizeof(float));
+    l->output = realloc(l->output, output_size * sizeof(Unum4));
+    l->delta = realloc(l->delta, output_size * sizeof(Unum4));
 
 #ifdef GPU
     cuda_free(l->output_gpu);
@@ -92,7 +93,7 @@ void forward_reorg_layer(const layer l, network net)
 {
     int i;
     if(l.flatten){
-        memcpy(l.output, net.input, l.outputs*l.batch*sizeof(float));
+        memcpy(l.output, net.input, l.outputs*l.batch*sizeof(Unum4));
         if(l.reverse){
             flatten(l.output, l.w*l.h, l.c, l.batch, 0);
         }else{
@@ -113,7 +114,7 @@ void backward_reorg_layer(const layer l, network net)
 {
     int i;
     if(l.flatten){
-        memcpy(net.delta, l.delta, l.outputs*l.batch*sizeof(float));
+        memcpy(net.delta, l.delta, l.outputs*l.batch*sizeof(Unum4));
         if(l.reverse){
             flatten(net.delta, l.w*l.h, l.c, l.batch, 1);
         }else{

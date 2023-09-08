@@ -1,7 +1,8 @@
+#include "unum4.h"
 #include <stdio.h>
 #include <math.h>
-void col2im_add_pixel(float *im, int height, int width, int channels,
-                        int row, int col, int channel, int pad, float val)
+void col2im_add_pixel(Unum4 *im, int height, int width, int channels,
+                        int row, int col, int channel, int pad, Unum4 val)
 {
     row -= pad;
     col -= pad;
@@ -11,9 +12,9 @@ void col2im_add_pixel(float *im, int height, int width, int channels,
     im[col + width*(row + height*channel)] += val;
 }
 //This one might be too, can't remember.
-void col2im_cpu(float* data_col,
+void col2im_cpu(Unum4* data_col,
          int channels,  int height,  int width,
-         int ksize,  int stride, int pad, float* data_im) 
+         int ksize,  int stride, int pad, Unum4* data_im) 
 {
     int c,h,w;
     int height_col = (height + 2*pad - ksize) / stride + 1;
@@ -29,7 +30,7 @@ void col2im_cpu(float* data_col,
                 int im_row = h_offset + h * stride;
                 int im_col = w_offset + w * stride;
                 int col_index = (c * height_col + h) * width_col + w;
-                double val = data_col[col_index];
+                Unum4 val = data_col[col_index];
                 col2im_add_pixel(data_im, height, width, channels,
                         im_row, im_col, c_im, pad, val);
             }

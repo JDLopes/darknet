@@ -31,7 +31,7 @@ OPTS=-Ofast
 LDFLAGS= -lm -pthread 
 COMMON= -Iinclude/ -Isrc/
 #CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
-CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -fpermissive -fPIC
+CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -fpermissive -w -fPIC
 
 ifeq ($(OPENMP), 1) 
 CFLAGS+= -fopenmp

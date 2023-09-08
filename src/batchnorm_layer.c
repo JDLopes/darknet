@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "convolutional_layer.h"
 #include "batchnorm_layer.h"
 #include "blas.h"
@@ -12,25 +13,25 @@ layer make_batchnorm_layer(int batch, int w, int h, int c)
     l.h = l.out_h = h;
     l.w = l.out_w = w;
     l.c = l.out_c = c;
-    l.output = calloc(h * w * c * batch, sizeof(float));
-    l.delta  = calloc(h * w * c * batch, sizeof(float));
+    l.output = calloc(h * w * c * batch, sizeof(Unum4));
+    l.delta  = calloc(h * w * c * batch, sizeof(Unum4));
     l.inputs = w*h*c;
     l.outputs = l.inputs;
 
-    l.scales = calloc(c, sizeof(float));
-    l.scale_updates = calloc(c, sizeof(float));
-    l.biases = calloc(c, sizeof(float));
-    l.bias_updates = calloc(c, sizeof(float));
+    l.scales = calloc(c, sizeof(Unum4));
+    l.scale_updates = calloc(c, sizeof(Unum4));
+    l.biases = calloc(c, sizeof(Unum4));
+    l.bias_updates = calloc(c, sizeof(Unum4));
     int i;
     for(i = 0; i < c; ++i){
         l.scales[i] = 1;
     }
 
-    l.mean = calloc(c, sizeof(float));
-    l.variance = calloc(c, sizeof(float));
+    l.mean = calloc(c, sizeof(Unum4));
+    l.variance = calloc(c, sizeof(Unum4));
 
-    l.rolling_mean = calloc(c, sizeof(float));
-    l.rolling_variance = calloc(c, sizeof(float));
+    l.rolling_mean = calloc(c, sizeof(Unum4));
+    l.rolling_variance = calloc(c, sizeof(Unum4));
 
     l.forward = forward_batchnorm_layer;
     l.backward = backward_batchnorm_layer;
@@ -69,11 +70,11 @@ layer make_batchnorm_layer(int batch, int w, int h, int c)
     return l;
 }
 
-void backward_scale_cpu(float *x_norm, float *delta, int batch, int n, int size, float *scale_updates)
+void backward_scale_cpu(Unum4 *x_norm, Unum4 *delta, int batch, int n, int size, Unum4 *scale_updates)
 {
     int i,b,f;
     for(f = 0; f < n; ++f){
-        float sum = 0;
+        Unum4 sum = 0;
         for(b = 0; b < batch; ++b){
             for(i = 0; i < size; ++i){
                 int index = i + size*(f + n*b);
@@ -84,7 +85,7 @@ void backward_scale_cpu(float *x_norm, float *delta, int batch, int n, int size,
     }
 }
 
-void mean_delta_cpu(float *delta, float *variance, int batch, int filters, int spatial, float *mean_delta)
+void mean_delta_cpu(Unum4 *delta, Unum4 *variance, int batch, int filters, int spatial, Unum4 *mean_delta)
 {
 
     int i,j,k;
@@ -99,7 +100,7 @@ void mean_delta_cpu(float *delta, float *variance, int batch, int filters, int s
         mean_delta[i] *= (-1./sqrt(variance[i] + .00001f));
     }
 }
-void  variance_delta_cpu(float *x, float *delta, float *mean, float *variance, int batch, int filters, int spatial, float *variance_delta)
+void  variance_delta_cpu(Unum4 *x, Unum4 *delta, Unum4 *mean, Unum4 *variance, int batch, int filters, int spatial, Unum4 *variance_delta)
 {
 
     int i,j,k;
@@ -111,10 +112,10 @@ void  variance_delta_cpu(float *x, float *delta, float *mean, float *variance, i
                 variance_delta[i] += delta[index]*(x[index] - mean[i]);
             }
         }
-        variance_delta[i] *= -.5 * pow(variance[i] + .00001f, (float)(-3./2.));
+        variance_delta[i] *= -.5 * pow(variance[i] + .00001f, (Unum4)(-3./2.));
     }
 }
-void normalize_delta_cpu(float *x, float *mean, float *variance, float *mean_delta, float *variance_delta, int batch, int filters, int spatial, float *delta)
+void normalize_delta_cpu(Unum4 *x, Unum4 *mean, Unum4 *variance, Unum4 *mean_delta, Unum4 *variance_delta, int batch, int filters, int spatial, Unum4 *delta)
 {
     int f, j, k;
     for(j = 0; j < batch; ++j){
@@ -192,8 +193,8 @@ void forward_batchnorm_layer_gpu(layer l, network net)
     copy_gpu(l.outputs*l.batch, l.output_gpu, 1, l.x_gpu, 1);
     if (net.train) {
 #ifdef CUDNN
-        float one = 1;
-        float zero = 0;
+        Unum4 one = 1;
+        Unum4 zero = 0;
         cudnnBatchNormalizationForwardTraining(cudnn_handle(),
                 CUDNN_BATCHNORM_SPATIAL,
                 &one,
@@ -242,8 +243,8 @@ void backward_batchnorm_layer_gpu(layer l, network net)
         l.variance_gpu = l.rolling_variance_gpu;
     }
 #ifdef CUDNN
-    float one = 1;
-    float zero = 0;
+    Unum4 one = 1;
+    Unum4 zero = 0;
     cudnnBatchNormalizationBackward(cudnn_handle(),
             CUDNN_BATCHNORM_SPATIAL,
             &one,

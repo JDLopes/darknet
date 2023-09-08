@@ -1,28 +1,29 @@
+#include "unum4.h"
 #include "darknet.h"
 
 #ifdef OPENCV
 image get_image_from_stream(CvCapture *cap);
 image ipl_to_image(IplImage* src);
 
-void reconstruct_picture(network net, float *features, image recon, image update, float rate, float momentum, float lambda, int smooth_size, int iters);
+void reconstruct_picture(network net, Unum4 *features, image recon, image update, Unum4 rate, Unum4 momentum, Unum4 lambda, int smooth_size, int iters);
 
 
 typedef struct {
-    float *x;
-    float *y;
-} float_pair;
+    Unum4 *x;
+    Unum4 *y;
+} Unum4_pair;
 
-float_pair get_rnn_vid_data(network net, char **files, int n, int batch, int steps)
+Unum4_pair get_rnn_vid_data(network net, char **files, int n, int batch, int steps)
 {
     int b;
     assert(net.batch == steps + 1);
     image out_im = get_network_image(net);
     int output_size = out_im.w*out_im.h*out_im.c;
     printf("%d %d %d\n", out_im.w, out_im.h, out_im.c);
-    float *feats = calloc(net.batch*batch*output_size, sizeof(float));
+    Unum4 *feats = calloc(net.batch*batch*output_size, sizeof(Unum4));
     for(b = 0; b < batch; ++b){
         int input_size = net.w*net.h*net.c;
-        float *input = calloc(input_size*net.batch, sizeof(float));
+        Unum4 *input = calloc(input_size*net.batch, sizeof(Unum4));
         char *filename = files[rand()%n];
         CvCapture *cap = cvCaptureFromFile(filename);
         int frames = cvGetCaptureProperty(cap, CV_CAP_PROP_FRAME_COUNT);
@@ -44,23 +45,23 @@ float_pair get_rnn_vid_data(network net, char **files, int n, int batch, int ste
             image re = resize_image(im, net.w, net.h);
             //show_image(re, "loaded");
             //cvWaitKey(10);
-            memcpy(input + i*input_size, re.data, input_size*sizeof(float));
+            memcpy(input + i*input_size, re.data, input_size*sizeof(Unum4));
             free_image(im);
             free_image(re);
         }
-        float *output = network_predict(net, input);
+        Unum4 *output = network_predict(net, input);
 
         free(input);
 
         for(i = 0; i < net.batch; ++i){
-            memcpy(feats + (b + i*batch)*output_size, output + i*output_size, output_size*sizeof(float));
+            memcpy(feats + (b + i*batch)*output_size, output + i*output_size, output_size*sizeof(Unum4));
         }
 
         cvReleaseCapture(&cap);
     }
 
     //printf("%d %d %d\n", out_im.w, out_im.h, out_im.c);
-    float_pair p = {0};
+    Unum4_pair p = {0};
     p.x = feats;
     p.y = feats + output_size*batch; //+ out_im.w*out_im.h*out_im.c;
 
@@ -75,7 +76,7 @@ void train_vid_rnn(char *cfgfile, char *weightfile)
     srand(time(0));
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
-    float avg_loss = -1;
+    Unum4 avg_loss = -1;
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
         load_weights(&net, weightfile);
@@ -97,11 +98,11 @@ void train_vid_rnn(char *cfgfile, char *weightfile)
     while(get_current_batch(net) < net.max_batches){
         i += 1;
         time=clock();
-        float_pair p = get_rnn_vid_data(extractor, paths, N, batch, steps);
+        Unum4_pair p = get_rnn_vid_data(extractor, paths, N, batch, steps);
 
         copy_cpu(net.inputs*net.batch, p.x, 1, net.input, 1);
         copy_cpu(net.truths*net.batch, p.y, 1, net.truth, 1);
-        float loss = train_network_datum(net) / (net.batch);
+        Unum4 loss = train_network_datum(net) / (net.batch);
 
 
         free(p.x);
@@ -126,7 +127,7 @@ void train_vid_rnn(char *cfgfile, char *weightfile)
 }
 
 
-image save_reconstruction(network net, image *init, float *feat, char *name, int i)
+image save_reconstruction(network net, image *init, Unum4 *feat, char *name, int i)
 {
     image recon;
     if (init) {
@@ -158,8 +159,8 @@ void generate_vid_rnn(char *cfgfile, char *weightfile)
 
     int i;
     CvCapture *cap = cvCaptureFromFile("/extra/vid/ILSVRC2015/Data/VID/snippets/val/ILSVRC2015_val_00007030.mp4");
-    float *feat;
-    float *next;
+    Unum4 *feat;
+    Unum4 *next;
     image last;
     for(i = 0; i < 25; ++i){
         image im = get_image_from_stream(cap);

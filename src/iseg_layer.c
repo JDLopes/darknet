@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "iseg_layer.h"
 #include "activations.h"
 #include "blas.h"
@@ -24,19 +25,19 @@ layer make_iseg_layer(int batch, int w, int h, int classes, int ids)
     l.classes = classes;
     l.batch = batch;
     l.extra = ids;
-    l.cost = calloc(1, sizeof(float));
+    l.cost = calloc(1, sizeof(Unum4));
     l.outputs = h*w*l.c;
     l.inputs = l.outputs;
     l.truths = 90*(l.w*l.h+1);
-    l.delta = calloc(batch*l.outputs, sizeof(float));
-    l.output = calloc(batch*l.outputs, sizeof(float));
+    l.delta = calloc(batch*l.outputs, sizeof(Unum4));
+    l.output = calloc(batch*l.outputs, sizeof(Unum4));
 
     l.counts = calloc(90, sizeof(int));
-    l.sums = calloc(90, sizeof(float*));
+    l.sums = calloc(90, sizeof(Unum4*));
     if(ids){
         int i;
         for(i = 0; i < 90; ++i){
-            l.sums[i] = calloc(ids, sizeof(float));
+            l.sums[i] = calloc(ids, sizeof(Unum4));
         }
     }
 
@@ -63,8 +64,8 @@ void resize_iseg_layer(layer *l, int w, int h)
     l->outputs = h*w*l->c;
     l->inputs = l->outputs;
 
-    l->output = realloc(l->output, l->batch*l->outputs*sizeof(float));
-    l->delta = realloc(l->delta, l->batch*l->outputs*sizeof(float));
+    l->output = realloc(l->output, l->batch*l->outputs*sizeof(Unum4));
+    l->delta = realloc(l->delta, l->batch*l->outputs*sizeof(Unum4));
 
 #ifdef GPU
     cuda_free(l->delta_gpu);
@@ -78,11 +79,11 @@ void resize_iseg_layer(layer *l, int w, int h)
 void forward_iseg_layer(const layer l, network net)
 {
 
-    double time = what_time_is_it_now();
+    Unum4 time = what_time_is_it_now();
     int i,b,j,k;
     int ids = l.extra;
-    memcpy(l.output, net.input, l.outputs*l.batch*sizeof(float));
-    memset(l.delta, 0, l.outputs * l.batch * sizeof(float));
+    memcpy(l.output, net.input, l.outputs*l.batch*sizeof(Unum4));
+    memset(l.delta, 0, l.outputs * l.batch * sizeof(Unum4));
 
 #ifndef GPU
     for (b = 0; b < l.batch; ++b){
@@ -118,7 +119,7 @@ void forward_iseg_layer(const layer l, network net)
             // add up metric embeddings for each instance
             for(k = 0; k < l.w*l.h; ++k){
                 int index = b*l.outputs + c*l.w*l.h + k;
-                float v = net.truth[b*l.truths + i*(l.w*l.h + 1) + 1 + k];
+                Unum4 v = net.truth[b*l.truths + i*(l.w*l.h + 1) + 1 + k];
                 if(v){
                     l.delta[index] = v - l.output[index];
                     axpy_cpu(ids, 1, l.output + b*l.outputs + l.classes*l.w*l.h + k, l.w*l.h, l.sums[i], 1);
@@ -127,15 +128,15 @@ void forward_iseg_layer(const layer l, network net)
             }
         }
 
-        float *mse = calloc(90, sizeof(float));
+        Unum4 *mse = calloc(90, sizeof(Unum4));
         for(i = 0; i < 90; ++i){
             int c = net.truth[b*l.truths + i*(l.w*l.h+1)];
             if(c < 0) break;
             for(k = 0; k < l.w*l.h; ++k){
-                float v = net.truth[b*l.truths + i*(l.w*l.h + 1) + 1 + k];
+                Unum4 v = net.truth[b*l.truths + i*(l.w*l.h + 1) + 1 + k];
                 if(v){
                     int z;
-                    float sum = 0;
+                    Unum4 sum = 0;
                     for(z = 0; z < ids; ++z){
                         int index = b*l.outputs + (l.classes + z)*l.w*l.h + k;
                         sum += pow(l.sums[i][z]/l.counts[i] - l.output[index], 2);
@@ -164,14 +165,14 @@ void forward_iseg_layer(const layer l, network net)
         for(i = 0; i < 90; ++i){
             if(!l.counts[i]) continue;
             for(k = 0; k < l.w*l.h; ++k){
-                float v = net.truth[b*l.truths + i*(l.w*l.h + 1) + 1 + k];
+                Unum4 v = net.truth[b*l.truths + i*(l.w*l.h + 1) + 1 + k];
                 if(v){
                     for(j = 0; j < 90; ++j){
                         if(!l.counts[j])continue;
                         int z;
                         for(z = 0; z < ids; ++z){
                             int index = b*l.outputs + (l.classes + z)*l.w*l.h + k;
-                            float diff = l.sums[j][z] - l.output[index];
+                            Unum4 diff = l.sums[j][z] - l.output[index];
                             if (j == i) l.delta[index] +=   diff < 0? -.1 : .1;
                             else        l.delta[index] += -(diff < 0? -.1 : .1);
                         }

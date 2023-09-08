@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "region_layer.h"
 #include "activations.h"
 #include "blas.h"
@@ -25,14 +26,14 @@ layer make_region_layer(int batch, int w, int h, int n, int classes, int coords)
     l.out_c = l.c;
     l.classes = classes;
     l.coords = coords;
-    l.cost = calloc(1, sizeof(float));
-    l.biases = calloc(n*2, sizeof(float));
-    l.bias_updates = calloc(n*2, sizeof(float));
+    l.cost = calloc(1, sizeof(Unum4));
+    l.biases = calloc(n*2, sizeof(Unum4));
+    l.bias_updates = calloc(n*2, sizeof(Unum4));
     l.outputs = h*w*n*(classes + coords + 1);
     l.inputs = l.outputs;
     l.truths = 30*(l.coords + 1);
-    l.delta = calloc(batch*l.outputs, sizeof(float));
-    l.output = calloc(batch*l.outputs, sizeof(float));
+    l.delta = calloc(batch*l.outputs, sizeof(Unum4));
+    l.output = calloc(batch*l.outputs, sizeof(Unum4));
     int i;
     for(i = 0; i < n*2; ++i){
         l.biases[i] = .5;
@@ -61,8 +62,8 @@ void resize_region_layer(layer *l, int w, int h)
     l->outputs = h*w*l->n*(l->classes + l->coords + 1);
     l->inputs = l->outputs;
 
-    l->output = realloc(l->output, l->batch*l->outputs*sizeof(float));
-    l->delta = realloc(l->delta, l->batch*l->outputs*sizeof(float));
+    l->output = realloc(l->output, l->batch*l->outputs*sizeof(Unum4));
+    l->delta = realloc(l->delta, l->batch*l->outputs*sizeof(Unum4));
 
 #ifdef GPU
     cuda_free(l->delta_gpu);
@@ -73,7 +74,7 @@ void resize_region_layer(layer *l, int w, int h)
 #endif
 }
 
-box get_region_box(float *x, float *biases, int n, int index, int i, int j, int w, int h, int stride)
+box get_region_box(Unum4 *x, Unum4 *biases, int n, int index, int i, int j, int w, int h, int stride)
 {
     box b;
     b.x = (i + x[index + 0*stride]) / w;
@@ -83,15 +84,15 @@ box get_region_box(float *x, float *biases, int n, int index, int i, int j, int 
     return b;
 }
 
-float delta_region_box(box truth, float *x, float *biases, int n, int index, int i, int j, int w, int h, float *delta, float scale, int stride)
+Unum4 delta_region_box(box truth, Unum4 *x, Unum4 *biases, int n, int index, int i, int j, int w, int h, Unum4 *delta, Unum4 scale, int stride)
 {
     box pred = get_region_box(x, biases, n, index, i, j, w, h, stride);
-    float iou = box_iou(pred, truth);
+    Unum4 iou = box_iou(pred, truth);
 
-    float tx = (truth.x*w - i);
-    float ty = (truth.y*h - j);
-    float tw = log(truth.w*w / biases[2*n]);
-    float th = log(truth.h*h / biases[2*n + 1]);
+    Unum4 tx = (truth.x*w - i);
+    Unum4 ty = (truth.y*h - j);
+    Unum4 tw = log(truth.w*w / biases[2*n]);
+    Unum4 th = log(truth.h*h / biases[2*n + 1]);
 
     delta[index + 0*stride] = scale * (tx - x[index + 0*stride]);
     delta[index + 1*stride] = scale * (ty - x[index + 1*stride]);
@@ -100,7 +101,7 @@ float delta_region_box(box truth, float *x, float *biases, int n, int index, int
     return iou;
 }
 
-void delta_region_mask(float *truth, float *x, int n, int index, float *delta, int stride, int scale)
+void delta_region_mask(Unum4 *truth, Unum4 *x, int n, int index, Unum4 *delta, int stride, int scale)
 {
     int i;
     for(i = 0; i < n; ++i){
@@ -109,11 +110,11 @@ void delta_region_mask(float *truth, float *x, int n, int index, float *delta, i
 }
 
 
-void delta_region_class(float *output, float *delta, int index, int classe, int classes, tree *hier, float scale, int stride, float *avg_cat, int tag)
+void delta_region_class(Unum4 *output, Unum4 *delta, int index, int classe, int classes, tree *hier, Unum4 scale, int stride, Unum4 *avg_cat, int tag)
 {
     int i, n;
     if(hier){
-        float pred = 1;
+        Unum4 pred = 1;
         while(classe >= 0){
             pred *= output[index + stride*classe];
             int g = hier->group[classe];
@@ -138,12 +139,12 @@ void delta_region_class(float *output, float *delta, int index, int classe, int 
     }
 }
 
-float logit(float x)
+Unum4 logit(Unum4 x)
 {
     return log(x/(1.-x));
 }
 
-float tisnan(float x)
+Unum4 tisnan(Unum4 x)
 {
     return (x != x);
 }
@@ -158,7 +159,7 @@ int entry_index(layer l, int batch, int location, int entry)
 void forward_region_layer(const layer l, network net)
 {
     int i,j,b,t,n;
-    memcpy(l.output, net.input, l.outputs*l.batch*sizeof(float));
+    memcpy(l.output, net.input, l.outputs*l.batch*sizeof(Unum4));
 
 #ifndef GPU
     for (b = 0; b < l.batch; ++b){
@@ -185,13 +186,13 @@ void forward_region_layer(const layer l, network net)
     }
 #endif
 
-    memset(l.delta, 0, l.outputs * l.batch * sizeof(float));
+    memset(l.delta, 0, l.outputs * l.batch * sizeof(Unum4));
     if(!net.train) return;
-    float avg_iou = 0;
-    float recall = 0;
-    float avg_cat = 0;
-    float avg_obj = 0;
-    float avg_anyobj = 0;
+    Unum4 avg_iou = 0;
+    Unum4 recall = 0;
+    Unum4 avg_cat = 0;
+    Unum4 avg_obj = 0;
+    Unum4 avg_anyobj = 0;
     int count = 0;
     int class_count = 0;
     *(l.cost) = 0;
@@ -199,18 +200,18 @@ void forward_region_layer(const layer l, network net)
         if(l.softmax_tree){
             int onlyclass = 0;
             for(t = 0; t < 30; ++t){
-                box truth = float_to_box(net.truth + t*(l.coords + 1) + b*l.truths, 1);
+                box truth = Unum4_to_box(net.truth + t*(l.coords + 1) + b*l.truths, 1);
                 if(!truth.x) break;
                 int classe = net.truth[t*(l.coords + 1) + b*l.truths + l.coords];
-                float maxp = 0;
+                Unum4 maxp = 0;
                 int maxi = 0;
                 if(truth.x > 100000 && truth.y > 100000){
                     for(n = 0; n < l.n*l.w*l.h; ++n){
                         int class_index = entry_index(l, b, n, l.coords + 1);
                         int obj_index = entry_index(l, b, n, l.coords);
-                        float scale =  l.output[obj_index];
+                        Unum4 scale =  l.output[obj_index];
                         l.delta[obj_index] = l.noobject_scale * (0 - l.output[obj_index]);
-                        float p = scale*get_hierarchy_probability(l.output + class_index, l.softmax_tree, classe, l.w*l.h);
+                        Unum4 p = scale*get_hierarchy_probability(l.output + class_index, l.softmax_tree, classe, l.w*l.h);
                         if(p > maxp){
                             maxp = p;
                             maxi = n;
@@ -234,11 +235,11 @@ void forward_region_layer(const layer l, network net)
                 for (n = 0; n < l.n; ++n) {
                     int box_index = entry_index(l, b, n*l.w*l.h + j*l.w + i, 0);
                     box pred = get_region_box(l.output, l.biases, n, box_index, i, j, l.w, l.h, l.w*l.h);
-                    float best_iou = 0;
+                    Unum4 best_iou = 0;
                     for(t = 0; t < 30; ++t){
-                        box truth = float_to_box(net.truth + t*(l.coords + 1) + b*l.truths, 1);
+                        box truth = Unum4_to_box(net.truth + t*(l.coords + 1) + b*l.truths, 1);
                         if(!truth.x) break;
-                        float iou = box_iou(pred, truth);
+                        Unum4 iou = box_iou(pred, truth);
                         if (iou > best_iou) {
                             best_iou = iou;
                         }
@@ -263,10 +264,10 @@ void forward_region_layer(const layer l, network net)
             }
         }
         for(t = 0; t < 30; ++t){
-            box truth = float_to_box(net.truth + t*(l.coords + 1) + b*l.truths, 1);
+            box truth = Unum4_to_box(net.truth + t*(l.coords + 1) + b*l.truths, 1);
 
             if(!truth.x) break;
-            float best_iou = 0;
+            Unum4 best_iou = 0;
             int best_n = 0;
             i = (truth.x * l.w);
             j = (truth.y * l.h);
@@ -282,7 +283,7 @@ void forward_region_layer(const layer l, network net)
                 }
                 pred.x = 0;
                 pred.y = 0;
-                float iou = box_iou(pred, truth_shift);
+                Unum4 iou = box_iou(pred, truth_shift);
                 if (iou > best_iou){
                     best_iou = iou;
                     best_n = n;
@@ -290,7 +291,7 @@ void forward_region_layer(const layer l, network net)
             }
 
             int box_index = entry_index(l, b, best_n*l.w*l.h + j*l.w + i, 0);
-            float iou = delta_region_box(truth, l.output, l.biases, best_n, box_index, i, j, l.w, l.h, l.delta, l.coord_scale *  (2 - truth.w*truth.h), l.w*l.h);
+            Unum4 iou = delta_region_box(truth, l.output, l.biases, best_n, box_index, i, j, l.w, l.h, l.delta, l.coord_scale *  (2 - truth.w*truth.h), l.w*l.h);
             if(l.coords > 4){
                 int mask_index = entry_index(l, b, best_n*l.w*l.h + j*l.w + i, 4);
                 delta_region_mask(net.truth + t*(l.coords + 1) + b*l.truths + 5, l.output, l.coords - 4, mask_index, l.delta, l.w*l.h, l.mask_scale);
@@ -338,7 +339,7 @@ void correct_region_boxes(detection *dets, int n, int w, int h, int netw, int ne
     int i;
     int new_w=0;
     int new_h=0;
-    if (((float)netw/w) < ((float)neth/h)) {
+    if (((Unum4)netw/w) < ((Unum4)neth/h)) {
         new_w = netw;
         new_h = (h * netw)/w;
     } else {
@@ -347,10 +348,10 @@ void correct_region_boxes(detection *dets, int n, int w, int h, int netw, int ne
     }
     for (i = 0; i < n; ++i){
         box b = dets[i].bbox;
-        b.x =  (b.x - (netw - new_w)/2./netw) / ((float)new_w/netw); 
-        b.y =  (b.y - (neth - new_h)/2./neth) / ((float)new_h/neth); 
-        b.w *= (float)netw/new_w;
-        b.h *= (float)neth/new_h;
+        b.x =  (b.x - (netw - new_w)/2./netw) / ((Unum4)new_w/netw); 
+        b.y =  (b.y - (neth - new_h)/2./neth) / ((Unum4)new_h/neth); 
+        b.w *= (Unum4)netw/new_w;
+        b.h *= (Unum4)neth/new_h;
         if(!relative){
             b.x *= w;
             b.w *= w;
@@ -361,19 +362,19 @@ void correct_region_boxes(detection *dets, int n, int w, int h, int netw, int ne
     }
 }
 
-void get_region_detections(layer l, int w, int h, int netw, int neth, float thresh, int *map, float tree_thresh, int relative, detection *dets)
+void get_region_detections(layer l, int w, int h, int netw, int neth, Unum4 thresh, int *map, Unum4 tree_thresh, int relative, detection *dets)
 {
     int i,j,n,z;
-    float *predictions = l.output;
+    Unum4 *predictions = l.output;
     if (l.batch == 2) {
-        float *flip = l.output + l.outputs;
+        Unum4 *flip = l.output + l.outputs;
         for (j = 0; j < l.h; ++j) {
             for (i = 0; i < l.w/2; ++i) {
                 for (n = 0; n < l.n; ++n) {
                     for(z = 0; z < l.classes + l.coords + 1; ++z){
                         int i1 = z*l.w*l.h*l.n + n*l.w*l.h + j*l.w + i;
                         int i2 = z*l.w*l.h*l.n + n*l.w*l.h + j*l.w + (l.w - i - 1);
-                        float swap = flip[i1];
+                        Unum4 swap = flip[i1];
                         flip[i1] = flip[i2];
                         flip[i2] = swap;
                         if(z == 0){
@@ -399,9 +400,9 @@ void get_region_detections(layer l, int w, int h, int netw, int neth, float thre
             int obj_index  = entry_index(l, 0, n*l.w*l.h + i, l.coords);
             int box_index  = entry_index(l, 0, n*l.w*l.h + i, 0);
             int mask_index = entry_index(l, 0, n*l.w*l.h + i, 4);
-            float scale = l.background ? 1 : predictions[obj_index];
+            Unum4 scale = l.background ? (Unum4)1 : predictions[obj_index];
             dets[index].bbox = get_region_box(predictions, l.biases, n, box_index, col, row, l.w, l.h, l.w*l.h);
-            dets[index].objectness = scale > thresh ? scale : 0;
+            dets[index].objectness = scale > thresh ? scale : (Unum4)0;
             if(dets[index].mask){
                 for(j = 0; j < l.coords - 4; ++j){
                     dets[index].mask[j] = l.output[mask_index + j*l.w*l.h];
@@ -415,19 +416,19 @@ void get_region_detections(layer l, int w, int h, int netw, int neth, float thre
                 if(map){
                     for(j = 0; j < 200; ++j){
                         int class_index = entry_index(l, 0, n*l.w*l.h + i, l.coords + 1 + map[j]);
-                        float prob = scale*predictions[class_index];
-                        dets[index].prob[j] = (prob > thresh) ? prob : 0;
+                        Unum4 prob = scale*predictions[class_index];
+                        dets[index].prob[j] = (prob > thresh) ? prob : (Unum4)0;
                     }
                 } else {
                     int j =  hierarchy_top_prediction(predictions + class_index, l.softmax_tree, tree_thresh, l.w*l.h);
-                    dets[index].prob[j] = (scale > thresh) ? scale : 0;
+                    dets[index].prob[j] = (scale > thresh) ? scale : (Unum4)0;
                 }
             } else {
                 if(dets[index].objectness){
                     for(j = 0; j < l.classes; ++j){
                         int class_index = entry_index(l, 0, n*l.w*l.h + i, l.coords + 1 + j);
-                        float prob = scale*predictions[class_index];
-                        dets[index].prob[j] = (prob > thresh) ? prob : 0;
+                        Unum4 prob = scale*predictions[class_index];
+                        dets[index].prob[j] = (prob > thresh) ? prob : (Unum4)0;
                     }
                 }
             }

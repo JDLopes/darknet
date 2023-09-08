@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "darknet.h"
 
 #include <stdio.h>
@@ -16,7 +17,7 @@ void train_coco(char *cfgfile, char *weightfile)
     srand(time(0));
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
-    float avg_loss = -1;
+    Unum4 avg_loss = -1;
     network *net = load_network(cfgfile, weightfile, 0);
     printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
     int imgs = net->batch*net->subdivisions;
@@ -28,7 +29,7 @@ void train_coco(char *cfgfile, char *weightfile)
 
     int side = l.side;
     int classes = l.classes;
-    float jitter = l.jitter;
+    Unum4 jitter = l.jitter;
 
     list *plist = get_paths(train_images);
     //int N = plist->size;
@@ -64,7 +65,7 @@ void train_coco(char *cfgfile, char *weightfile)
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 
         /*
-           image im = float_to_image(net->w, net->h, 3, train.X.vals[113]);
+           image im = Unum4_to_image(net->w, net->h, 3, train.X.vals[113]);
            image copy = copy_image(im);
            draw_coco(copy, train.y.vals[113], 7, "truth");
            cvWaitKey(0);
@@ -72,7 +73,7 @@ void train_coco(char *cfgfile, char *weightfile)
          */
 
         time=clock();
-        float loss = train_network(net, train);
+        Unum4 loss = train_network(net, train);
         if (avg_loss < 0) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
 
@@ -98,20 +99,20 @@ static void print_cocos(FILE *fp, int image_id, detection *dets, int num_boxes, 
 {
     int i, j;
     for(i = 0; i < num_boxes; ++i){
-        float xmin = dets[i].bbox.x - dets[i].bbox.w/2.;
-        float xmax = dets[i].bbox.x + dets[i].bbox.w/2.;
-        float ymin = dets[i].bbox.y - dets[i].bbox.h/2.;
-        float ymax = dets[i].bbox.y + dets[i].bbox.h/2.;
+        Unum4 xmin = dets[i].bbox.x - dets[i].bbox.w/2.;
+        Unum4 xmax = dets[i].bbox.x + dets[i].bbox.w/2.;
+        Unum4 ymin = dets[i].bbox.y - dets[i].bbox.h/2.;
+        Unum4 ymax = dets[i].bbox.y + dets[i].bbox.h/2.;
 
         if (xmin < 0) xmin = 0;
         if (ymin < 0) ymin = 0;
         if (xmax > w) xmax = w;
         if (ymax > h) ymax = h;
 
-        float bx = xmin;
-        float by = ymin;
-        float bw = xmax - xmin;
-        float bh = ymax - ymin;
+        Unum4 bx = xmin;
+        Unum4 by = ymin;
+        Unum4 bw = xmax - xmin;
+        Unum4 bh = ymax - ymin;
 
         for(j = 0; j < classes; ++j){
             if (dets[i].prob[j]) fprintf(fp, "{\"image_id\":%d, \"category_id\":%d, \"bbox\":[%f, %f, %f, %f], \"score\":%f},\n", image_id, coco_ids[j], bx, by, bw, bh, dets[i].prob[j]);
@@ -150,9 +151,9 @@ void validate_coco(char *cfg, char *weights)
     int i=0;
     int t;
 
-    float thresh = .01;
+    Unum4 thresh = .01;
     int nms = 1;
-    float iou_thresh = .5;
+    Unum4 iou_thresh = .5;
 
     int nthreads = 8;
     image *val = calloc(nthreads, sizeof(image));
@@ -189,7 +190,7 @@ void validate_coco(char *cfg, char *weights)
         for(t = 0; t < nthreads && i+t-nthreads < m; ++t){
             char *path = paths[i+t-nthreads];
             int image_id = get_coco_image_id(path);
-            float *X = val_resized[t].data;
+            Unum4 *X = val_resized[t].data;
             network_predict(net, X);
             int w = val[t].w;
             int h = val[t].h;
@@ -206,7 +207,7 @@ void validate_coco(char *cfg, char *weights)
     fprintf(fp, "\n]\n");
     fclose(fp);
 
-    fprintf(stderr, "Total Detection Time: %f Seconds\n", (double)(time(0) - start));
+    fprintf(stderr, "Total Detection Time: %f Seconds\n", (Unum4)((double)(time(0) - start)));
 }
 
 void validate_coco_recall(char *cfgfile, char *weightfile)
@@ -235,14 +236,14 @@ void validate_coco_recall(char *cfgfile, char *weightfile)
     int m = plist->size;
     int i=0;
 
-    float thresh = .001;
+    Unum4 thresh = .001;
     int nms = 0;
-    float iou_thresh = .5;
+    Unum4 iou_thresh = .5;
 
     int total = 0;
     int correct = 0;
     int proposals = 0;
-    float avg_iou = 0;
+    Unum4 avg_iou = 0;
 
     for(i = 0; i < m; ++i){
         char *path = paths[i];
@@ -271,9 +272,9 @@ void validate_coco_recall(char *cfgfile, char *weightfile)
         for (j = 0; j < num_labels; ++j) {
             ++total;
             box t = {truth[j].x, truth[j].y, truth[j].w, truth[j].h};
-            float best_iou = 0;
+            Unum4 best_iou = 0;
             for(k = 0; k < side*side*l.n; ++k){
-                float iou = box_iou(dets[k].bbox, t);
+                Unum4 iou = box_iou(dets[k].bbox, t);
                 if(dets[k].objectness > thresh && iou > best_iou){
                     best_iou = iou;
                 }
@@ -284,21 +285,21 @@ void validate_coco_recall(char *cfgfile, char *weightfile)
             }
         }
         free_detections(dets, nboxes);
-        fprintf(stderr, "%5d %5d %5d\tRPs/Img: %.2f\tIOU: %.2f%%\tRecall:%.2f%%\n", i, correct, total, (float)proposals/(i+1), avg_iou*100/total, 100.*correct/total);
+        fprintf(stderr, "%5d %5d %5d\tRPs/Img: %.2f\tIOU: %.2f%%\tRecall:%.2f%%\n", i, correct, total, (Unum4)proposals/(i+1), avg_iou*100/total, 100.*correct/total);
         free(id);
         free_image(orig);
         free_image(sized);
     }
 }
 
-void test_coco(char *cfgfile, char *weightfile, char *filename, float thresh)
+void test_coco(char *cfgfile, char *weightfile, char *filename, Unum4 thresh)
 {
     image **alphabet = load_alphabet();
     network *net = load_network(cfgfile, weightfile, 0);
     layer l = net->layers[net->n-1];
     set_batch_network(net, 1);
     srand(2222222);
-    float nms = .4;
+    Unum4 nms = .4;
     clock_t time;
     char buff[256];
     char *input = buff;
@@ -314,7 +315,7 @@ void test_coco(char *cfgfile, char *weightfile, char *filename, float thresh)
         }
         image im = load_image_color(input,0,0);
         image sized = resize_image(im, net->w, net->h);
-        float *X = sized.data;
+        Unum4 *X = sized.data;
         time=clock();
         network_predict(net, X);
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
@@ -336,7 +337,7 @@ void test_coco(char *cfgfile, char *weightfile, char *filename, float thresh)
 void run_coco(int argc, char **argv)
 {
     char *prefix = find_char_arg(argc, argv, "-prefix", 0);
-    float thresh = find_float_arg(argc, argv, "-thresh", .2);
+    Unum4 thresh = find_Unum4_arg(argc, argv, "-thresh", .2);
     int cam_index = find_int_arg(argc, argv, "-c", 0);
     int frame_skip = find_int_arg(argc, argv, "-s", 0);
 

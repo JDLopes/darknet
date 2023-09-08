@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "upsample_layer.h"
 #include "cuda.h"
 #include "blas.h"
@@ -24,8 +25,8 @@ layer make_upsample_layer(int batch, int w, int h, int c, int stride)
     l.stride = stride;
     l.outputs = l.out_w*l.out_h*l.out_c;
     l.inputs = l.w*l.h*l.c;
-    l.delta =  calloc(l.outputs*batch, sizeof(float));
-    l.output = calloc(l.outputs*batch, sizeof(float));;
+    l.delta =  calloc(l.outputs*batch, sizeof(Unum4));
+    l.output = calloc(l.outputs*batch, sizeof(Unum4));;
 
     l.forward = forward_upsample_layer;
     l.backward = backward_upsample_layer;
@@ -53,8 +54,8 @@ void resize_upsample_layer(layer *l, int w, int h)
     }
     l->outputs = l->out_w*l->out_h*l->out_c;
     l->inputs = l->h*l->w*l->c;
-    l->delta =  realloc(l->delta, l->outputs*l->batch*sizeof(float));
-    l->output = realloc(l->output, l->outputs*l->batch*sizeof(float));
+    l->delta =  realloc(l->delta, l->outputs*l->batch*sizeof(Unum4));
+    l->output = realloc(l->output, l->outputs*l->batch*sizeof(Unum4));
 
 #ifdef GPU
     cuda_free(l->output_gpu);

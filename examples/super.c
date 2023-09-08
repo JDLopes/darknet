@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "darknet.h"
 
 void train_super(char *cfgfile, char *weightfile, int clear)
@@ -7,7 +8,7 @@ void train_super(char *cfgfile, char *weightfile, int clear)
     srand(time(0));
     char *base = basecfg(cfgfile);
     printf("%s\n", base);
-    float avg_loss = -1;
+    Unum4 avg_loss = -1;
     network *net = load_network(cfgfile, weightfile, clear);
     printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
     int imgs = net->batch*net->subdivisions;
@@ -42,7 +43,7 @@ void train_super(char *cfgfile, char *weightfile, int clear)
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 
         time=clock();
-        float loss = train_network(net, train);
+        Unum4 loss = train_network(net, train);
         if (avg_loss < 0) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
 
@@ -87,7 +88,7 @@ void test_super(char *cfgfile, char *weightfile, char *filename)
         resize_network(net, im.w, im.h);
         printf("%d %d\n", im.w, im.h);
 
-        float *X = im.data;
+        Unum4 *X = im.data;
         time=clock();
         network_predict(net, X);
         image out = get_network_image(net);

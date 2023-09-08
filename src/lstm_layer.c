@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "lstm_layer.h"
 #include "connected_layer.h"
 #include "utils.h"
@@ -79,27 +80,27 @@ layer make_lstm_layer(int batch, int inputs, int outputs, int steps, int batch_n
     l.batch_normalize = batch_normalize;
     l.outputs = outputs;
 
-    l.output = calloc(outputs*batch*steps, sizeof(float));
-    l.state = calloc(outputs*batch, sizeof(float));
+    l.output = calloc(outputs*batch*steps, sizeof(Unum4));
+    l.state = calloc(outputs*batch, sizeof(Unum4));
 
     l.forward = forward_lstm_layer;
     l.update = update_lstm_layer;
 
-    l.prev_state_cpu =  calloc(batch*outputs, sizeof(float));
-    l.prev_cell_cpu =   calloc(batch*outputs, sizeof(float));
-    l.cell_cpu =        calloc(batch*outputs*steps, sizeof(float));
+    l.prev_state_cpu =  calloc(batch*outputs, sizeof(Unum4));
+    l.prev_cell_cpu =   calloc(batch*outputs, sizeof(Unum4));
+    l.cell_cpu =        calloc(batch*outputs*steps, sizeof(Unum4));
 
-    l.f_cpu =           calloc(batch*outputs, sizeof(float));
-    l.i_cpu =           calloc(batch*outputs, sizeof(float));
-    l.g_cpu =           calloc(batch*outputs, sizeof(float));
-    l.o_cpu =           calloc(batch*outputs, sizeof(float));
-    l.c_cpu =           calloc(batch*outputs, sizeof(float));
-    l.h_cpu =           calloc(batch*outputs, sizeof(float));
-    l.temp_cpu =        calloc(batch*outputs, sizeof(float));
-    l.temp2_cpu =       calloc(batch*outputs, sizeof(float));
-    l.temp3_cpu =       calloc(batch*outputs, sizeof(float));
-    l.dc_cpu =          calloc(batch*outputs, sizeof(float));
-    l.dh_cpu =          calloc(batch*outputs, sizeof(float));
+    l.f_cpu =           calloc(batch*outputs, sizeof(Unum4));
+    l.i_cpu =           calloc(batch*outputs, sizeof(Unum4));
+    l.g_cpu =           calloc(batch*outputs, sizeof(Unum4));
+    l.o_cpu =           calloc(batch*outputs, sizeof(Unum4));
+    l.c_cpu =           calloc(batch*outputs, sizeof(Unum4));
+    l.h_cpu =           calloc(batch*outputs, sizeof(Unum4));
+    l.temp_cpu =        calloc(batch*outputs, sizeof(Unum4));
+    l.temp2_cpu =       calloc(batch*outputs, sizeof(Unum4));
+    l.temp3_cpu =       calloc(batch*outputs, sizeof(Unum4));
+    l.dc_cpu =          calloc(batch*outputs, sizeof(Unum4));
+    l.dh_cpu =          calloc(batch*outputs, sizeof(Unum4));
 
 #ifdef GPU
     l.forward_gpu = forward_lstm_layer_gpu;

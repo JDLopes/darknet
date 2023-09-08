@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "cost_layer.h"
 #include "utils.h"
 #include "cuda.h"
@@ -38,7 +39,7 @@ char *get_cost_string(COST_TYPE a)
     return "sse";
 }
 
-cost_layer make_cost_layer(int batch, int inputs, COST_TYPE cost_type, float scale)
+cost_layer make_cost_layer(int batch, int inputs, COST_TYPE cost_type, Unum4 scale)
 {
     fprintf(stderr, "cost                                           %4d\n",  inputs);
     cost_layer l = {0};
@@ -49,9 +50,9 @@ cost_layer make_cost_layer(int batch, int inputs, COST_TYPE cost_type, float sca
     l.inputs = inputs;
     l.outputs = inputs;
     l.cost_type = cost_type;
-    l.delta = calloc(inputs*batch, sizeof(float));
-    l.output = calloc(inputs*batch, sizeof(float));
-    l.cost = calloc(1, sizeof(float));
+    l.delta = calloc(inputs*batch, sizeof(Unum4));
+    l.output = calloc(inputs*batch, sizeof(Unum4));
+    l.cost = calloc(1, sizeof(Unum4));
 
     l.forward = forward_cost_layer;
     l.backward = backward_cost_layer;
@@ -69,8 +70,8 @@ void resize_cost_layer(cost_layer *l, int inputs)
 {
     l->inputs = inputs;
     l->outputs = inputs;
-    l->delta = realloc(l->delta, inputs*l->batch*sizeof(float));
-    l->output = realloc(l->output, inputs*l->batch*sizeof(float));
+    l->delta = realloc(l->delta, inputs*l->batch*sizeof(Unum4));
+    l->output = realloc(l->output, inputs*l->batch*sizeof(Unum4));
 #ifdef GPU
     cuda_free(l->delta_gpu);
     cuda_free(l->output_gpu);
@@ -115,11 +116,11 @@ void push_cost_layer(cost_layer l)
     cuda_push_array(l.delta_gpu, l.delta, l.batch*l.inputs);
 }
 
-int float_abs_compare (const void * a, const void * b)
+int Unum4_abs_compare (const void * a, const void * b)
 {
-    float fa = *(const float*) a;
+    Unum4 fa = *(const Unum4*) a;
     if(fa < 0) fa = -fa;
-    float fb = *(const float*) b;
+    Unum4 fb = *(const Unum4*) b;
     if(fb < 0) fb = -fb;
     return (fa > fb) - (fa < fb);
 }
@@ -152,9 +153,9 @@ void forward_cost_layer_gpu(cost_layer l, network net)
 
     if(l.ratio){
         cuda_pull_array(l.delta_gpu, l.delta, l.batch*l.inputs);
-        qsort(l.delta, l.batch*l.inputs, sizeof(float), float_abs_compare);
+        qsort(l.delta, l.batch*l.inputs, sizeof(Unum4), Unum4_abs_compare);
         int n = (1-l.ratio) * l.batch*l.inputs;
-        float thresh = l.delta[n];
+        Unum4 thresh = l.delta[n];
         thresh = 0;
         printf("%f\n", thresh);
         supp_gpu(l.batch*l.inputs, thresh, l.delta_gpu, 1);

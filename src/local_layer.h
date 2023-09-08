@@ -24,8 +24,8 @@ void forward_local_layer(const local_layer layer, network net);
 void backward_local_layer(local_layer layer, network net);
 void update_local_layer(local_layer layer, update_args a);
 
-void bias_output(float *output, float *biases, int batch, int n, int size);
-void backward_bias(float *bias_updates, float *delta, int batch, int n, int size);
+void bias_output(Unum4 *output, Unum4 *biases, int batch, int n, int size);
+void backward_bias(Unum4 *bias_updates, Unum4 *delta, int batch, int n, int size);
 
 #endif
 

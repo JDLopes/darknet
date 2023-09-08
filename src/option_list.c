@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -124,14 +125,14 @@ int option_find_int_quiet(list *l, char *key, int def)
     return def;
 }
 
-float option_find_float_quiet(list *l, char *key, float def)
+Unum4 option_find_Unum4_quiet(list *l, char *key, Unum4 def)
 {
     char *v = option_find(l, key);
     if(v) return atof(v);
     return def;
 }
 
-float option_find_float(list *l, char *key, float def)
+Unum4 option_find_Unum4(list *l, char *key, Unum4 def)
 {
     char *v = option_find(l, key);
     if(v) return atof(v);

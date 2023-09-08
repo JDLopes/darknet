@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "tree.h"
@@ -24,9 +25,9 @@ void change_leaves(tree *t, char *leaf_list)
     fprintf(stderr, "Found %d leaves.\n", found);
 }
 
-float get_hierarchy_probability(float *x, tree *hier, int c, int stride)
+Unum4 get_hierarchy_probability(Unum4 *x, tree *hier, int c, int stride)
 {
-    float p = 1;
+    Unum4 p = 1;
     while(c >= 0){
         p = p * x[c*stride];
         c = hier->parent[c];
@@ -34,7 +35,7 @@ float get_hierarchy_probability(float *x, tree *hier, int c, int stride)
     return p;
 }
 
-void hierarchy_predictions(float *predictions, int n, tree *hier, int only_leaves, int stride)
+void hierarchy_predictions(Unum4 *predictions, int n, tree *hier, int only_leaves, int stride)
 {
     int j;
     for(j = 0; j < n; ++j){
@@ -50,18 +51,18 @@ void hierarchy_predictions(float *predictions, int n, tree *hier, int only_leave
     }
 }
 
-int hierarchy_top_prediction(float *predictions, tree *hier, float thresh, int stride)
+int hierarchy_top_prediction(Unum4 *predictions, tree *hier, Unum4 thresh, int stride)
 {
-    float p = 1;
+    Unum4 p = 1;
     int group = 0;
     int i;
     while(1){
-        float max = 0;
+        Unum4 max = 0;
         int max_i = 0;
 
         for(i = 0; i < hier->group_size[group]; ++i){
             int index = i + hier->group_offset[group];
-            float val = predictions[(i + hier->group_offset[group])*stride];
+            Unum4 val = predictions[(i + hier->group_offset[group])*stride];
             if(val > max){
                 max_i = index;
                 max = val;

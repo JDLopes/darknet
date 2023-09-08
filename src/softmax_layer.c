@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "softmax_layer.h"
 #include "blas.h"
 #include "cuda.h"
@@ -18,10 +19,10 @@ softmax_layer make_softmax_layer(int batch, int inputs, int groups)
     l.groups = groups;
     l.inputs = inputs;
     l.outputs = inputs;
-    l.loss = calloc(inputs*batch, sizeof(float));
-    l.output = calloc(inputs*batch, sizeof(float));
-    l.delta = calloc(inputs*batch, sizeof(float));
-    l.cost = calloc(1, sizeof(float));
+    l.loss = calloc(inputs*batch, sizeof(Unum4));
+    l.output = calloc(inputs*batch, sizeof(Unum4));
+    l.delta = calloc(inputs*batch, sizeof(Unum4));
+    l.cost = calloc(1, sizeof(Unum4));
 
     l.forward = forward_softmax_layer;
     l.backward = backward_softmax_layer;

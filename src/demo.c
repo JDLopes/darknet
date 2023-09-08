@@ -1,3 +1,4 @@
+#include "unum4.h"
 #include "network.h"
 #include "detection_layer.h"
 #include "region_layer.h"
@@ -22,20 +23,20 @@ static image buff [3];
 static image buff_letter[3];
 static int buff_index = 0;
 static void * cap;
-static float fps = 0;
-static float demo_thresh = 0;
-static float demo_hier = .5;
+static Unum4 fps = 0;
+static Unum4 demo_thresh = 0;
+static Unum4 demo_hier = .5;
 static int running = 0;
 
 static int demo_frame = 3;
 static int demo_index = 0;
-static float **predictions;
-static float *avg;
+static Unum4 **predictions;
+static Unum4 *avg;
 static int demo_done = 0;
 static int demo_total = 0;
-double demo_time;
+Unum4 demo_time;
 
-detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num);
+detection *get_network_boxes(network *net, int w, int h, Unum4 thresh, Unum4 hier, int *map, int relative, int *num);
 
 int size_network(network *net)
 {
@@ -57,7 +58,7 @@ void remember_network(network *net)
     for(i = 0; i < net->n; ++i){
         layer l = net->layers[i];
         if(l.type == YOLO || l.type == REGION || l.type == DETECTION){
-            memcpy(predictions[demo_index] + count, net->layers[i].output, sizeof(float) * l.outputs);
+            memcpy(predictions[demo_index] + count, net->layers[i].output, sizeof(Unum4) * l.outputs);
             count += l.outputs;
         }
     }
@@ -74,7 +75,7 @@ detection *avg_predictions(network *net, int *nboxes)
     for(i = 0; i < net->n; ++i){
         layer l = net->layers[i];
         if(l.type == YOLO || l.type == REGION || l.type == DETECTION){
-            memcpy(l.output, avg + count, sizeof(float) * l.outputs);
+            memcpy(l.output, avg + count, sizeof(Unum4) * l.outputs);
             count += l.outputs;
         }
     }
@@ -85,10 +86,10 @@ detection *avg_predictions(network *net, int *nboxes)
 void *detect_in_thread(void *ptr)
 {
     running = 1;
-    float nms = .4;
+    Unum4 nms = .4;
 
     layer l = net->layers[net->n-1];
-    float *X = buff_letter[(buff_index+2)%3].data;
+    Unum4 *X = buff_letter[(buff_index+2)%3].data;
     network_predict(net, X);
 
     /*
@@ -108,7 +109,7 @@ void *detect_in_thread(void *ptr)
        for(i = 0; i < demo_detections; ++i){
        avg[i].objectness = 0;
        avg[i].bbox = zero;
-       memset(avg[i].prob, 0, classes*sizeof(float));
+       memset(avg[i].prob, 0, classes*sizeof(Unum4));
        for(j = 0; j < demo_frame; ++j){
        axpy_cpu(classes, 1./demo_frame, dets[j][i].prob, 1, avg[i].prob, 1);
        avg[i].objectness += dets[j][i].objectness * 1./demo_frame;
@@ -184,7 +185,7 @@ void *detect_loop(void *ptr)
     }
 }
 
-void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const char *filename, char **names, int classes, int delay, char *prefix, int avg_frames, float hier, int w, int h, int frames, int fullscreen)
+void demo(char *cfgfile, char *weightfile, Unum4 thresh, int cam_index, const char *filename, char **names, int classes, int delay, char *prefix, int avg_frames, Unum4 hier, int w, int h, int frames, int fullscreen)
 {
     //demo_frame = avg_frames;
     image **alphabet = load_alphabet();
@@ -203,11 +204,11 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
 
     int i;
     demo_total = size_network(net);
-    predictions = calloc(demo_frame, sizeof(float*));
+    predictions = calloc(demo_frame, sizeof(Unum4*));
     for (i = 0; i < demo_frame; ++i){
-        predictions[i] = calloc(demo_total, sizeof(float));
+        predictions[i] = calloc(demo_total, sizeof(Unum4));
     }
-    avg = calloc(demo_total, sizeof(float));
+    avg = calloc(demo_total, sizeof(Unum4));
 
     if(filename){
         printf("video file: %s\n", filename);
@@ -252,10 +253,10 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
 }
 
 /*
-   void demo_compare(char *cfg1, char *weight1, char *cfg2, char *weight2, float thresh, int cam_index, const char *filename, char **names, int classes, int delay, char *prefix, int avg_frames, float hier, int w, int h, int frames, int fullscreen)
+   void demo_compare(char *cfg1, char *weight1, char *cfg2, char *weight2, Unum4 thresh, int cam_index, const char *filename, char **names, int classes, int delay, char *prefix, int avg_frames, Unum4 hier, int w, int h, int frames, int fullscreen)
    {
    demo_frame = avg_frames;
-   predictions = calloc(demo_frame, sizeof(float*));
+   predictions = calloc(demo_frame, sizeof(Unum4*));
    image **alphabet = load_alphabet();
    demo_names = names;
    demo_alphabet = alphabet;
@@ -293,12 +294,12 @@ void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const ch
    demo_detections = l.n*l.w*l.h;
    int j;
 
-   avg = (float *) calloc(l.outputs, sizeof(float));
-   for(j = 0; j < demo_frame; ++j) predictions[j] = (float *) calloc(l.outputs, sizeof(float));
+   avg = (Unum4 *) calloc(l.outputs, sizeof(Unum4));
+   for(j = 0; j < demo_frame; ++j) predictions[j] = (Unum4 *) calloc(l.outputs, sizeof(Unum4));
 
    boxes = (box *)calloc(l.w*l.h*l.n, sizeof(box));
-   probs = (float **)calloc(l.w*l.h*l.n, sizeof(float *));
-   for(j = 0; j < l.w*l.h*l.n; ++j) probs[j] = (float *)calloc(l.classes+1, sizeof(float));
+   probs = (Unum4 **)calloc(l.w*l.h*l.n, sizeof(Unum4 *));
+   for(j = 0; j < l.w*l.h*l.n; ++j) probs[j] = (Unum4 *)calloc(l.classes+1, sizeof(Unum4));
 
    buff[0] = get_image_from_stream(cap);
    buff[1] = copy_image(buff[0]);
@@ -341,7 +342,7 @@ pthread_join(detect_thread, 0);
 }
 */
 #else
-void demo(char *cfgfile, char *weightfile, float thresh, int cam_index, const char *filename, char **names, int classes, int delay, char *prefix, int avg, float hier, int w, int h, int frames, int fullscreen)
+void demo(char *cfgfile, char *weightfile, Unum4 thresh, int cam_index, const char *filename, char **names, int classes, int delay, char *prefix, int avg, Unum4 hier, int w, int h, int frames, int fullscreen)
 {
     fprintf(stderr, "Demo needs OpenCV for webcam images.\n");
 }

@@ -1,9 +1,10 @@
+#include "unum4.h"
 #include "darknet.h"
 
 void train_tag(char *cfgfile, char *weightfile, int clear)
 {
     srand(time(0));
-    float avg_loss = -1;
+    Unum4 avg_loss = -1;
     char *base = basecfg(cfgfile);
     char *backup_directory = "/home/pjreddie/backup/";
     printf("%s\n", base);
@@ -51,10 +52,10 @@ void train_tag(char *cfgfile, char *weightfile, int clear)
         load_thread = load_data_in_thread(args);
         printf("Loaded: %lf seconds\n", sec(clock()-time));
         time=clock();
-        float loss = train_network(net, train);
+        Unum4 loss = train_network(net, train);
         if(avg_loss == -1) avg_loss = loss;
         avg_loss = avg_loss*.9 + loss*.1;
-        printf("%ld, %.3f: %f, %f avg, %f rate, %lf seconds, %ld images\n", get_current_batch(net), (float)(*net->seen)/N, loss, avg_loss, get_current_rate(net), sec(clock()-time), *net->seen);
+        printf("%ld, %.3f: %f, %f avg, %f rate, %lf seconds, %ld images\n", get_current_batch(net), (Unum4)(*net->seen)/N, loss, avg_loss, get_current_rate(net), sec(clock()-time), *net->seen);
         free_data(train);
         if(*net->seen/N > epoch){
             epoch = *net->seen/N;
@@ -107,9 +108,9 @@ void test_tag(char *cfgfile, char *weightfile, char *filename)
         resize_network(net, r.w, r.h);
         printf("%d %d\n", r.w, r.h);
 
-        float *X = r.data;
+        Unum4 *X = r.data;
         time=clock();
-        float *predictions = network_predict(net, X);
+        Unum4 *predictions = network_predict(net, X);
         top_predictions(net, 10, indexes);
         printf("%s: Predicted in %f seconds.\n", input, sec(clock()-time));
         for(i = 0; i < 10; ++i){
