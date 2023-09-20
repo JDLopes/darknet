@@ -182,7 +182,7 @@ network *make_network(int n)
     net->layers = calloc(net->n, sizeof(layer));
     net->seen = calloc(1, sizeof(size_t));
     net->t    = calloc(1, sizeof(int));
-    net->cost = calloc(1, sizeof(Unum4));
+    net->cost = calloc_u(1, sizeof(Unum4));
     return net;
 }
 
@@ -415,8 +415,8 @@ int resize_network(network *net, int w, int h)
     net->output = out.output;
     free(net->input);
     free(net->truth);
-    net->input = calloc(net->inputs*net->batch, sizeof(Unum4));
-    net->truth = calloc(net->truths*net->batch, sizeof(Unum4));
+    net->input = calloc_u(net->inputs*net->batch, sizeof(Unum4));
+    net->truth = calloc_u(net->truths*net->batch, sizeof(Unum4));
 #ifdef GPU
     if(gpu_index >= 0){
         cuda_free(net->input_gpu);
@@ -532,9 +532,9 @@ detection *make_network_boxes(network *net, Unum4 thresh, int *num)
     if(num) *num = nboxes;
     detection *dets = calloc(nboxes, sizeof(detection));
     for(i = 0; i < nboxes; ++i){
-        dets[i].prob = calloc(l.classes, sizeof(Unum4));
+        dets[i].prob = calloc_u(l.classes, sizeof(Unum4));
         if(l.coords > 4){
-            dets[i].mask = calloc(l.coords-4, sizeof(Unum4));
+            dets[i].mask = calloc_u(l.coords-4, sizeof(Unum4));
         }
     }
     return dets;
@@ -594,7 +594,7 @@ matrix network_predict_data_multi(network *net, data test, int n)
     int i,j,b,m;
     int k = net->outputs;
     matrix pred = make_matrix(test.X.rows, k);
-    Unum4 *X = calloc(net->batch*test.X.rows, sizeof(Unum4));
+    Unum4 *X = calloc_u(net->batch*test.X.rows, sizeof(Unum4));
     for(i = 0; i < test.X.rows; i += net->batch){
         for(b = 0; b < net->batch; ++b){
             if(i+b == test.X.rows) break;
@@ -619,7 +619,7 @@ matrix network_predict_data(network *net, data test)
     int i,j,b;
     int k = net->outputs;
     matrix pred = make_matrix(test.X.rows, k);
-    Unum4 *X = calloc(net->batch*test.X.cols, sizeof(Unum4));
+    Unum4 *X = calloc_u(net->batch*test.X.cols, sizeof(Unum4));
     for(i = 0; i < test.X.rows; i += net->batch){
         for(b = 0; b < net->batch; ++b){
             if(i+b == test.X.rows) break;
@@ -1096,7 +1096,7 @@ Unum4 train_networks(network **nets, int n, data d, int interval)
     int subdivisions = nets[0]->subdivisions;
     assert(batch * subdivisions * n == d.X.rows);
     pthread_t *threads = (pthread_t *) calloc(n, sizeof(pthread_t));
-    Unum4 *errors = (Unum4 *) calloc(n, sizeof(Unum4));
+    Unum4 *errors = (Unum4 *) calloc_u(n, sizeof(Unum4));
 
     Unum4 sum = 0;
     for(i = 0; i < n; ++i){

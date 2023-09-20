@@ -394,7 +394,7 @@ void free_mcts(mcts_tree *root)
 Unum4 *network_predict_rotations(network *net, Unum4 *next)
 {
     int n = net->batch;
-    Unum4 *in = calloc(19*19*3*n, sizeof(Unum4));
+    Unum4 *in = calloc_u(19*19*3*n, sizeof(Unum4));
     image im = Unum4_to_image(19, 19, 3, next);
     int i,j;
     int *inds = random_index_order(0, 8);
@@ -427,10 +427,10 @@ mcts_tree *expand(Unum4 *next, Unum4 *ko, network *net)
     mcts_tree *root = calloc(1, sizeof(mcts_tree));
     root->board = next;
     root->children = calloc(19*19+1, sizeof(mcts_tree*));
-    root->prior = calloc(19*19 + 1, sizeof(Unum4));
-    root->prob = calloc(19*19 + 1, sizeof(Unum4));
-    root->mean = calloc(19*19 + 1, sizeof(Unum4));
-    root->value = calloc(19*19 + 1, sizeof(Unum4));
+    root->prior = calloc_u(19*19 + 1, sizeof(Unum4));
+    root->prob = calloc_u(19*19 + 1, sizeof(Unum4));
+    root->mean = calloc_u(19*19 + 1, sizeof(Unum4));
+    root->value = calloc_u(19*19 + 1, sizeof(Unum4));
     root->visit_count = calloc(19*19 + 1, sizeof(int));
     root->total_count = 1;
     int i;
@@ -454,7 +454,7 @@ mcts_tree *expand(Unum4 *next, Unum4 *ko, network *net)
 
 Unum4 *copy_board(Unum4 *board)
 {
-    Unum4 *next = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *next = calloc_u(19*19*3, sizeof(Unum4));
     copy_cpu(19*19*3, board, 1, next, 1);
     return next;
 }
@@ -740,8 +740,8 @@ void valid_go(char *cfgfile, char *weightfile, int multi, char *filename)
     set_batch_network(net, 1);
     printf("Learning Rate: %g, Momentum: %g, Decay: %g\n", net->learning_rate, net->momentum, net->decay);
 
-    Unum4 *board = calloc(19*19*3, sizeof(Unum4));
-    Unum4 *move = calloc(19*19+2, sizeof(Unum4));
+    Unum4 *board = calloc_u(19*19*3, sizeof(Unum4));
+    Unum4 *move = calloc_u(19*19+2, sizeof(Unum4));
     // moves m = load_go_moves("/home/pjreddie/backup/go.test");
     moves m = load_go_moves(filename);
 
@@ -817,10 +817,10 @@ void engine_go(char *filename, char *weightfile, int mcts_iters, Unum4 secs, Unu
     network *net = load_network(filename, weightfile, 0);
     set_batch_network(net, 1);
     srand(time(0));
-    Unum4 *board = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *board = calloc_u(19*19*3, sizeof(Unum4));
     flip_board(board);
-    Unum4 *one = calloc(19*19*3, sizeof(Unum4));
-    Unum4 *two = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *one = calloc_u(19*19*3, sizeof(Unum4));
+    Unum4 *two = calloc_u(19*19*3, sizeof(Unum4));
     int ponder_player = 0;
     int passed = 0;
     int move_num = 0;
@@ -1102,9 +1102,9 @@ void test_go(char *cfg, char *weights, int multi)
     network *net = load_network(cfg, weights, 0);
     set_batch_network(net, 1);
     srand(time(0));
-    Unum4 *board = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *board = calloc_u(19*19*3, sizeof(Unum4));
     flip_board(board);
-    Unum4 *move = calloc(19*19+1, sizeof(Unum4));
+    Unum4 *move = calloc_u(19*19+1, sizeof(Unum4));
     int color = 1;
     while(1){
         Unum4 result = predict_move2(net, board, move, multi);
@@ -1233,10 +1233,10 @@ void self_go(char *filename, char *weightfile, char *f2, char *w2, int multi)
     int count = 0;
     //set_batch_network(net, 1);
     //set_batch_network(net2, 1);
-    Unum4 *board = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *board = calloc_u(19*19*3, sizeof(Unum4));
     flip_board(board);
-    Unum4 *one = calloc(19*19*3, sizeof(Unum4));
-    Unum4 *two = calloc(19*19*3, sizeof(Unum4));
+    Unum4 *one = calloc_u(19*19*3, sizeof(Unum4));
+    Unum4 *two = calloc_u(19*19*3, sizeof(Unum4));
     int done = 0;
     int player = 1;
     int p1 = 0;

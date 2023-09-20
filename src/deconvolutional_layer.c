@@ -50,11 +50,11 @@ layer make_deconvolutional_layer(int batch, int h, int w, int c, int n, int size
     l.nweights = c*n*size*size;
     l.nbiases = n;
 
-    l.weights = calloc(c*n*size*size, sizeof(Unum4));
-    l.weight_updates = calloc(c*n*size*size, sizeof(Unum4));
+    l.weights = calloc_u(c*n*size*size, sizeof(Unum4));
+    l.weight_updates = calloc_u(c*n*size*size, sizeof(Unum4));
 
-    l.biases = calloc(n, sizeof(Unum4));
-    l.bias_updates = calloc(n, sizeof(Unum4));
+    l.biases = calloc_u(n, sizeof(Unum4));
+    l.bias_updates = calloc_u(n, sizeof(Unum4));
     //Unum4 scale = n/(size*size*c);
     //printf("scale: %f\n", scale);
     Unum4 scale = .02;
@@ -73,8 +73,8 @@ layer make_deconvolutional_layer(int batch, int h, int w, int c, int n, int size
 
     scal_cpu(l.nweights, (Unum4)l.out_w*l.out_h/(l.w*l.h), l.weights, 1);
 
-    l.output = calloc(l.batch*l.outputs, sizeof(Unum4));
-    l.delta  = calloc(l.batch*l.outputs, sizeof(Unum4));
+    l.output = calloc_u(l.batch*l.outputs, sizeof(Unum4));
+    l.delta  = calloc_u(l.batch*l.outputs, sizeof(Unum4));
 
     l.forward = forward_deconvolutional_layer;
     l.backward = backward_deconvolutional_layer;
@@ -83,30 +83,30 @@ layer make_deconvolutional_layer(int batch, int h, int w, int c, int n, int size
     l.batch_normalize = batch_normalize;
 
     if(batch_normalize){
-        l.scales = calloc(n, sizeof(Unum4));
-        l.scale_updates = calloc(n, sizeof(Unum4));
+        l.scales = calloc_u(n, sizeof(Unum4));
+        l.scale_updates = calloc_u(n, sizeof(Unum4));
         for(i = 0; i < n; ++i){
             l.scales[i] = 1;
         }
 
-        l.mean = calloc(n, sizeof(Unum4));
-        l.variance = calloc(n, sizeof(Unum4));
+        l.mean = calloc_u(n, sizeof(Unum4));
+        l.variance = calloc_u(n, sizeof(Unum4));
 
-        l.mean_delta = calloc(n, sizeof(Unum4));
-        l.variance_delta = calloc(n, sizeof(Unum4));
+        l.mean_delta = calloc_u(n, sizeof(Unum4));
+        l.variance_delta = calloc_u(n, sizeof(Unum4));
 
-        l.rolling_mean = calloc(n, sizeof(Unum4));
-        l.rolling_variance = calloc(n, sizeof(Unum4));
-        l.x = calloc(l.batch*l.outputs, sizeof(Unum4));
-        l.x_norm = calloc(l.batch*l.outputs, sizeof(Unum4));
+        l.rolling_mean = calloc_u(n, sizeof(Unum4));
+        l.rolling_variance = calloc_u(n, sizeof(Unum4));
+        l.x = calloc_u(l.batch*l.outputs, sizeof(Unum4));
+        l.x_norm = calloc_u(l.batch*l.outputs, sizeof(Unum4));
     }
     if(adam){
-        l.m = calloc(c*n*size*size, sizeof(Unum4));
-        l.v = calloc(c*n*size*size, sizeof(Unum4));
-        l.bias_m = calloc(n, sizeof(Unum4));
-        l.scale_m = calloc(n, sizeof(Unum4));
-        l.bias_v = calloc(n, sizeof(Unum4));
-        l.scale_v = calloc(n, sizeof(Unum4));
+        l.m = calloc_u(c*n*size*size, sizeof(Unum4));
+        l.v = calloc_u(c*n*size*size, sizeof(Unum4));
+        l.bias_m = calloc_u(n, sizeof(Unum4));
+        l.scale_m = calloc_u(n, sizeof(Unum4));
+        l.bias_v = calloc_u(n, sizeof(Unum4));
+        l.scale_v = calloc_u(n, sizeof(Unum4));
     }
 
 #ifdef GPU

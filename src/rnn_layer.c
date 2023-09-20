@@ -37,8 +37,8 @@ layer make_rnn_layer(int batch, int inputs, int outputs, int steps, ACTIVATION a
     l.steps = steps;
     l.inputs = inputs;
 
-    l.state = calloc(batch*outputs, sizeof(Unum4));
-    l.prev_state = calloc(batch*outputs, sizeof(Unum4));
+    l.state = calloc_u(batch*outputs, sizeof(Unum4));
+    l.prev_state = calloc_u(batch*outputs, sizeof(Unum4));
 
     l.input_layer = malloc(sizeof(layer));
     fprintf(stderr, "\t\t");

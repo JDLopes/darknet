@@ -48,18 +48,18 @@ local_layer make_local_layer(int batch, int h, int w, int c, int n, int size, in
     l.outputs = l.out_h * l.out_w * l.out_c;
     l.inputs = l.w * l.h * l.c;
 
-    l.weights = calloc(c*n*size*size*locations, sizeof(Unum4));
-    l.weight_updates = calloc(c*n*size*size*locations, sizeof(Unum4));
+    l.weights = calloc_u(c*n*size*size*locations, sizeof(Unum4));
+    l.weight_updates = calloc_u(c*n*size*size*locations, sizeof(Unum4));
 
-    l.biases = calloc(l.outputs, sizeof(Unum4));
-    l.bias_updates = calloc(l.outputs, sizeof(Unum4));
+    l.biases = calloc_u(l.outputs, sizeof(Unum4));
+    l.bias_updates = calloc_u(l.outputs, sizeof(Unum4));
 
     // Unum4 scale = 1./sqrt(size*size*c);
     Unum4 scale = sqrt(2./(size*size*c));
     for(i = 0; i < c*n*size*size; ++i) l.weights[i] = scale*rand_uniform(-1,1);
 
-    l.output = calloc(l.batch*out_h * out_w * n, sizeof(Unum4));
-    l.delta  = calloc(l.batch*out_h * out_w * n, sizeof(Unum4));
+    l.output = calloc_u(l.batch*out_h * out_w * n, sizeof(Unum4));
+    l.delta  = calloc_u(l.batch*out_h * out_w * n, sizeof(Unum4));
 
     l.workspace_size = out_h*out_w*size*size*c;
     

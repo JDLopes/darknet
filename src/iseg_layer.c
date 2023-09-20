@@ -25,19 +25,19 @@ layer make_iseg_layer(int batch, int w, int h, int classes, int ids)
     l.classes = classes;
     l.batch = batch;
     l.extra = ids;
-    l.cost = calloc(1, sizeof(Unum4));
+    l.cost = calloc_u(1, sizeof(Unum4));
     l.outputs = h*w*l.c;
     l.inputs = l.outputs;
     l.truths = 90*(l.w*l.h+1);
-    l.delta = calloc(batch*l.outputs, sizeof(Unum4));
-    l.output = calloc(batch*l.outputs, sizeof(Unum4));
+    l.delta = calloc_u(batch*l.outputs, sizeof(Unum4));
+    l.output = calloc_u(batch*l.outputs, sizeof(Unum4));
 
     l.counts = calloc(90, sizeof(int));
     l.sums = calloc(90, sizeof(Unum4*));
     if(ids){
         int i;
         for(i = 0; i < 90; ++i){
-            l.sums[i] = calloc(ids, sizeof(Unum4));
+            l.sums[i] = calloc_u(ids, sizeof(Unum4));
         }
     }
 
@@ -128,7 +128,7 @@ void forward_iseg_layer(const layer l, network net)
             }
         }
 
-        Unum4 *mse = calloc(90, sizeof(Unum4));
+        Unum4 *mse = calloc_u(90, sizeof(Unum4));
         for(i = 0; i < 90; ++i){
             int c = net.truth[b*l.truths + i*(l.w*l.h+1)];
             if(c < 0) break;

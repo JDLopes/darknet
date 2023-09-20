@@ -485,8 +485,8 @@ void normalize_image(image p)
 
 void normalize_image2(image p)
 {
-    Unum4 *min = calloc(p.c, sizeof(Unum4));
-    Unum4 *max = calloc(p.c, sizeof(Unum4));
+    Unum4 *min = calloc_u(p.c, sizeof(Unum4));
+    Unum4 *max = calloc_u(p.c, sizeof(Unum4));
     int i,j;
     for(i = 0; i < p.c; ++i) min[i] = max[i] = p.data[i*p.h*p.w];
 
@@ -520,7 +520,7 @@ void copy_image_into(image src, image dest)
 image copy_image(image p)
 {
     image copy = p;
-    copy.data = calloc(p.h*p.w*p.c, sizeof(Unum4));
+    copy.data = calloc_u(p.h*p.w*p.c, sizeof(Unum4));
     memcpy(copy.data, p.data, p.h*p.w*p.c*sizeof(Unum4));
     return copy;
 }
@@ -609,14 +609,14 @@ image make_empty_image(int w, int h, int c)
 image make_image(int w, int h, int c)
 {
     image out = make_empty_image(w,h,c);
-    out.data = calloc(h*w*c, sizeof(Unum4));
+    out.data = calloc_u(h*w*c, sizeof(Unum4));
     return out;
 }
 
 image make_random_image(int w, int h, int c)
 {
     image out = make_empty_image(w,h,c);
-    out.data = calloc(h*w*c, sizeof(Unum4));
+    out.data = calloc_u(h*w*c, sizeof(Unum4));
     int i;
     for(i = 0; i < w*h*c; ++i){
         out.data[i] = (rand_normal() * .25) + .5;

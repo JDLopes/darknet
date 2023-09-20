@@ -27,8 +27,8 @@ layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int 
     l.out_h = l.h;
     l.out_c = l.c;
     l.classes = classes;
-    l.cost = calloc(1, sizeof(Unum4));
-    l.biases = calloc(total*2, sizeof(Unum4));
+    l.cost = calloc_u(1, sizeof(Unum4));
+    l.biases = calloc_u(total*2, sizeof(Unum4));
     if(mask) l.mask = mask;
     else{
         l.mask = calloc(n, sizeof(int));
@@ -36,12 +36,12 @@ layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int 
             l.mask[i] = i;
         }
     }
-    l.bias_updates = calloc(n*2, sizeof(Unum4));
+    l.bias_updates = calloc_u(n*2, sizeof(Unum4));
     l.outputs = h*w*n*(classes + 4 + 1);
     l.inputs = l.outputs;
     l.truths = 90*(4 + 1);
-    l.delta = calloc(batch*l.outputs, sizeof(Unum4));
-    l.output = calloc(batch*l.outputs, sizeof(Unum4));
+    l.delta = calloc_u(batch*l.outputs, sizeof(Unum4));
+    l.output = calloc_u(batch*l.outputs, sizeof(Unum4));
     for(i = 0; i < total*2; ++i){
         l.biases[i] = .5;
     }

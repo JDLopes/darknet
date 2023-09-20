@@ -177,7 +177,7 @@ int bbox_comparator(const void *a, const void *b)
 
     image im1 = load_image_color(box1.filename, net.w, net.h);
     image im2 = load_image_color(box2.filename, net.w, net.h);
-    Unum4 *X  = calloc(net.w*net.h*net.c, sizeof(Unum4));
+    Unum4 *X  = calloc_u(net.w*net.h*net.c, sizeof(Unum4));
     memcpy(X,                   im1.data, im1.w*im1.h*im1.c*sizeof(Unum4));
     memcpy(X+im1.w*im1.h*im1.c, im2.data, im2.w*im2.h*im2.c*sizeof(Unum4));
     Unum4 *predictions = network_predict(net, X);
@@ -206,7 +206,7 @@ void bbox_fight(network net, sortable_bbox *a, sortable_bbox *b, int classes, in
 {
     image im1 = load_image_color(a->filename, net.w, net.h);
     image im2 = load_image_color(b->filename, net.w, net.h);
-    Unum4 *X  = calloc(net.w*net.h*net.c, sizeof(Unum4));
+    Unum4 *X  = calloc_u(net.w*net.h*net.c, sizeof(Unum4));
     memcpy(X,                   im1.data, im1.w*im1.h*im1.c*sizeof(Unum4));
     memcpy(X+im1.w*im1.h*im1.c, im2.data, im2.w*im2.h*im2.c*sizeof(Unum4));
     Unum4 *predictions = network_predict(net, X);
@@ -281,7 +281,7 @@ void BattleRoyaleWithCheese(char *filename, char *weightfile)
         boxes[i].filename = paths[i];
         boxes[i].net = net;
         boxes[i].classes = classes;
-        boxes[i].elos = calloc(classes, sizeof(Unum4));;
+        boxes[i].elos = calloc_u(classes, sizeof(Unum4));;
         for(j = 0; j < classes; ++j){
             boxes[i].elos[j] = 1500;
         }

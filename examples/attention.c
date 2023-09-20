@@ -21,8 +21,8 @@ matrix network_loss_data(network *net, data test)
     int i,b;
     int k = 1;
     matrix pred = make_matrix(test.X.rows, k);
-    Unum4 *X = calloc(net->batch*test.X.cols, sizeof(Unum4));
-    Unum4 *y = calloc(net->batch*test.y.cols, sizeof(Unum4));
+    Unum4 *X = calloc_u(net->batch*test.X.cols, sizeof(Unum4));
+    Unum4 *y = calloc_u(net->batch*test.y.cols, sizeof(Unum4));
     for(i = 0; i < test.X.rows; i += net->batch){
         for(b = 0; b < net->batch; ++b){
             if(i+b == test.X.rows) break;
@@ -260,7 +260,7 @@ void validate_attention_single(char *datacfg, char *filename, char *weightfile)
     int divs = 4;
     int size = 2;
     int extra = 0;
-    Unum4 *avgs = calloc(classes, sizeof(Unum4));
+    Unum4 *avgs = calloc_u(classes, sizeof(Unum4));
     int *inds = calloc(divs*divs, sizeof(int));
 
     for(i = 0; i < m; ++i){
@@ -355,7 +355,7 @@ void validate_attention_multi(char *datacfg, char *filename, char *weightfile)
                 break;
             }
         }
-        Unum4 *pred = calloc(classes, sizeof(Unum4));
+        Unum4 *pred = calloc_u(classes, sizeof(Unum4));
         image im = load_image_color(paths[i], 0, 0);
         for(j = 0; j < nscales; ++j){
             image r = resize_min(im, scales[j]);

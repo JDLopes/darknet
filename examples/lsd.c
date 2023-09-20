@@ -60,8 +60,8 @@ void train_lsd3(char *fcfg, char *fweight, char *gcfg, char *gweight, char *acfg
     fnet->train=1;
     int x_size = fnet->inputs*fnet->batch;
     int y_size = fnet->truths*fnet->batch;
-    Unum4 *X = calloc(x_size, sizeof(Unum4));
-    Unum4 *y = calloc(y_size, sizeof(Unum4));
+    Unum4 *X = calloc_u(x_size, sizeof(Unum4));
+    Unum4 *y = calloc_u(y_size, sizeof(Unum4));
 
 
     int ax_size = anet->inputs*anet->batch;
@@ -260,9 +260,9 @@ void train_pix2pix(char *cfg, char *weight, char *acfg, char *aweight, int clear
     gstate.truth = cuda_make_array(0, y_size);
     gstate.delta = 0;
     gstate.train = 1;
-    Unum4 *pixs = calloc(x_size, sizeof(Unum4));
-    Unum4 *graypixs = calloc(x_size, sizeof(Unum4));
-    Unum4 *y = calloc(y_size, sizeof(Unum4));
+    Unum4 *pixs = calloc_u(x_size, sizeof(Unum4));
+    Unum4 *graypixs = calloc_u(x_size, sizeof(Unum4));
+    Unum4 *y = calloc_u(y_size, sizeof(Unum4));
 
     network_state astate = {0};
     astate.index = 0;
@@ -915,9 +915,9 @@ void train_colorizer(char *cfg, char *weight, char *acfg, char *aweight, int cle
     //int y_size = x_size;
     net->delta = 0;
     net->train = 1;
-    Unum4 *pixs = calloc(x_size, sizeof(Unum4));
-    Unum4 *graypixs = calloc(x_size, sizeof(Unum4));
-    //Unum4 *y = calloc(y_size, sizeof(Unum4));
+    Unum4 *pixs = calloc_u(x_size, sizeof(Unum4));
+    Unum4 *graypixs = calloc_u(x_size, sizeof(Unum4));
+    //Unum4 *y = calloc_u(y_size, sizeof(Unum4));
 
     //int ay_size = anet->outputs*anet->batch;
     anet->delta = 0;
@@ -1109,8 +1109,8 @@ gstate.input = cuda_make_array(0, x_size);
 gstate.truth = 0;
 gstate.delta = 0;
 gstate.train = 1;
-Unum4 *X = calloc(x_size, sizeof(Unum4));
-Unum4 *y = calloc(y_size, sizeof(Unum4));
+Unum4 *X = calloc_u(x_size, sizeof(Unum4));
+Unum4 *y = calloc_u(y_size, sizeof(Unum4));
 
 network_state astate = {0};
 astate.index = 0;

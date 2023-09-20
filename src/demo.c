@@ -206,9 +206,9 @@ void demo(char *cfgfile, char *weightfile, Unum4 thresh, int cam_index, const ch
     demo_total = size_network(net);
     predictions = calloc(demo_frame, sizeof(Unum4*));
     for (i = 0; i < demo_frame; ++i){
-        predictions[i] = calloc(demo_total, sizeof(Unum4));
+        predictions[i] = calloc_u(demo_total, sizeof(Unum4));
     }
-    avg = calloc(demo_total, sizeof(Unum4));
+    avg = calloc_u(demo_total, sizeof(Unum4));
 
     if(filename){
         printf("video file: %s\n", filename);
@@ -294,12 +294,12 @@ void demo(char *cfgfile, char *weightfile, Unum4 thresh, int cam_index, const ch
    demo_detections = l.n*l.w*l.h;
    int j;
 
-   avg = (Unum4 *) calloc(l.outputs, sizeof(Unum4));
-   for(j = 0; j < demo_frame; ++j) predictions[j] = (Unum4 *) calloc(l.outputs, sizeof(Unum4));
+   avg = (Unum4 *) calloc_u(l.outputs, sizeof(Unum4));
+   for(j = 0; j < demo_frame; ++j) predictions[j] = (Unum4 *) calloc_u(l.outputs, sizeof(Unum4));
 
    boxes = (box *)calloc(l.w*l.h*l.n, sizeof(box));
    probs = (Unum4 **)calloc(l.w*l.h*l.n, sizeof(Unum4 *));
-   for(j = 0; j < l.w*l.h*l.n; ++j) probs[j] = (Unum4 *)calloc(l.classes+1, sizeof(Unum4));
+   for(j = 0; j < l.w*l.h*l.n; ++j) probs[j] = (Unum4 *)calloc_u(l.classes+1, sizeof(Unum4));
 
    buff[0] = get_image_from_stream(cap);
    buff[1] = copy_image(buff[0]);

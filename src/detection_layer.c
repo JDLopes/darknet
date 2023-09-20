@@ -27,11 +27,11 @@ detection_layer make_detection_layer(int batch, int inputs, int n, int side, int
     l.w = side;
     l.h = side;
     assert(side*side*((1 + l.coords)*l.n + l.classes) == inputs);
-    l.cost = calloc(1, sizeof(Unum4));
+    l.cost = calloc_u(1, sizeof(Unum4));
     l.outputs = l.inputs;
     l.truths = l.side*l.side*(1+l.coords+l.classes);
-    l.output = calloc(batch*l.outputs, sizeof(Unum4));
-    l.delta = calloc(batch*l.outputs, sizeof(Unum4));
+    l.output = calloc_u(batch*l.outputs, sizeof(Unum4));
+    l.delta = calloc_u(batch*l.outputs, sizeof(Unum4));
 
     l.forward = forward_detection_layer;
     l.backward = backward_detection_layer;
@@ -184,7 +184,7 @@ void forward_detection_layer(const detection_layer l, network net)
         }
 
         if(0){
-            Unum4 *costs = calloc(l.batch*locations*l.n, sizeof(Unum4));
+            Unum4 *costs = calloc_u(l.batch*locations*l.n, sizeof(Unum4));
             for (b = 0; b < l.batch; ++b) {
                 int index = b*l.inputs;
                 for (i = 0; i < locations; ++i) {

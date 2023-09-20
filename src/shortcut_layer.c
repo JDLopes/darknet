@@ -24,8 +24,8 @@ layer make_shortcut_layer(int batch, int index, int w, int h, int c, int w2, int
 
     l.index = index;
 
-    l.delta =  calloc(l.outputs*batch, sizeof(Unum4));
-    l.output = calloc(l.outputs*batch, sizeof(Unum4));;
+    l.delta =  calloc_u(l.outputs*batch, sizeof(Unum4));
+    l.output = calloc_u(l.outputs*batch, sizeof(Unum4));;
 
     l.forward = forward_shortcut_layer;
     l.backward = backward_shortcut_layer;

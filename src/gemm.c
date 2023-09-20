@@ -31,7 +31,7 @@ void gemm_bin(int M, int N, int K, Unum4 ALPHA,
 Unum4 *random_matrix(int rows, int cols)
 {
     int i;
-    Unum4 *m = calloc(rows*cols, sizeof(Unum4));
+    Unum4 *m = calloc_u(rows*cols, sizeof(Unum4));
     for(i = 0; i < rows*cols; ++i){
         m[i] = (Unum4)rand()/RAND_MAX;
     }

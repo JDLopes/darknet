@@ -712,7 +712,7 @@ void parse_net_options(list *options, network *net)
             if (l[i] == ',') ++n;
         }
         int *steps = calloc(n, sizeof(int));
-        Unum4 *scales = calloc(n, sizeof(Unum4));
+        Unum4 *scales = calloc_u(n, sizeof(Unum4));
         for(i = 0; i < n; ++i){
             int step    = atoi(l);
             Unum4 scale = atof(p);
@@ -867,8 +867,8 @@ network *parse_network_cfg(char *filename)
     net->truths = out.outputs;
     if(net->layers[net->n-1].truths) net->truths = net->layers[net->n-1].truths;
     net->output = out.output;
-    net->input = calloc(net->inputs*net->batch, sizeof(Unum4));
-    net->truth = calloc(net->truths*net->batch, sizeof(Unum4));
+    net->input = calloc_u(net->inputs*net->batch, sizeof(Unum4));
+    net->truth = calloc_u(net->truths*net->batch, sizeof(Unum4));
 #ifdef GPU
     net->output_gpu = out.output_gpu;
     net->input_gpu = cuda_make_array(net->input, net->inputs*net->batch);
@@ -1085,7 +1085,7 @@ void save_weights(network *net, char *filename)
 
 void transpose_matrix(Unum4 *a, int rows, int cols)
 {
-    Unum4 *transpose = calloc(rows*cols, sizeof(Unum4));
+    Unum4 *transpose = calloc_u(rows*cols, sizeof(Unum4));
     int x, y;
     for(x = 0; x < rows; ++x){
         for(y = 0; y < cols; ++y){

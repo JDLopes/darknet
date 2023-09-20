@@ -268,12 +268,12 @@ layer normalize_layer(layer l, int n)
 {
     int j;
     l.batch_normalize=1;
-    l.scales = calloc(n, sizeof(Unum4));
+    l.scales = calloc_u(n, sizeof(Unum4));
     for(j = 0; j < n; ++j){
         l.scales[j] = 1;
     }
-    l.rolling_mean = calloc(n, sizeof(Unum4));
-    l.rolling_variance = calloc(n, sizeof(Unum4));
+    l.rolling_mean = calloc_u(n, sizeof(Unum4));
+    l.rolling_variance = calloc_u(n, sizeof(Unum4));
     return l;
 }
 

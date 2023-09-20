@@ -18,8 +18,8 @@ avgpool_layer make_avgpool_layer(int batch, int w, int h, int c)
     l.outputs = l.out_c;
     l.inputs = h*w*c;
     int output_size = l.outputs * batch;
-    l.output =  calloc(output_size, sizeof(Unum4));
-    l.delta =   calloc(output_size, sizeof(Unum4));
+    l.output =  calloc_u(output_size, sizeof(Unum4));
+    l.delta =   calloc_u(output_size, sizeof(Unum4));
     l.forward = forward_avgpool_layer;
     l.backward = backward_avgpool_layer;
     #ifdef GPU

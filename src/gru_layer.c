@@ -73,16 +73,16 @@ layer make_gru_layer(int batch, int inputs, int outputs, int steps, int batch_no
 
 
     l.outputs = outputs;
-    l.output = calloc(outputs*batch*steps, sizeof(Unum4));
-    l.delta = calloc(outputs*batch*steps, sizeof(Unum4));
-    l.state = calloc(outputs*batch, sizeof(Unum4));
-    l.prev_state = calloc(outputs*batch, sizeof(Unum4));
-    l.forgot_state = calloc(outputs*batch, sizeof(Unum4));
-    l.forgot_delta = calloc(outputs*batch, sizeof(Unum4));
+    l.output = calloc_u(outputs*batch*steps, sizeof(Unum4));
+    l.delta = calloc_u(outputs*batch*steps, sizeof(Unum4));
+    l.state = calloc_u(outputs*batch, sizeof(Unum4));
+    l.prev_state = calloc_u(outputs*batch, sizeof(Unum4));
+    l.forgot_state = calloc_u(outputs*batch, sizeof(Unum4));
+    l.forgot_delta = calloc_u(outputs*batch, sizeof(Unum4));
 
-    l.r_cpu = calloc(outputs*batch, sizeof(Unum4));
-    l.z_cpu = calloc(outputs*batch, sizeof(Unum4));
-    l.h_cpu = calloc(outputs*batch, sizeof(Unum4));
+    l.r_cpu = calloc_u(outputs*batch, sizeof(Unum4));
+    l.z_cpu = calloc_u(outputs*batch, sizeof(Unum4));
+    l.h_cpu = calloc_u(outputs*batch, sizeof(Unum4));
 
     l.forward = forward_gru_layer;
     l.backward = backward_gru_layer;

@@ -50,7 +50,7 @@ int *read_intlist(char *gpu_list, int *ngpus, int d)
             gpu_list = strchr(gpu_list, ',')+1;
         }
     } else {
-        gpus = calloc(1, sizeof(Unum4));
+        gpus = calloc_u(1, sizeof(Unum4));
         *gpus = d;
         *ngpus = 1;
     }
@@ -459,7 +459,7 @@ int count_fields(char *line)
 
 Unum4 *parse_fields(char *line, int n)
 {
-    Unum4 *field = calloc(n, sizeof(Unum4));
+    Unum4 *field = calloc_u(n, sizeof(Unum4));
     char *c, *p, *end;
     int count = 0;
     int done = 0;
@@ -718,7 +718,7 @@ Unum4 **one_hot_encode(Unum4 *a, int n, int k)
     int i;
     Unum4 **t = calloc(n, sizeof(Unum4*));
     for(i = 0; i < n; ++i){
-        t[i] = calloc(k, sizeof(Unum4));
+        t[i] = calloc_u(k, sizeof(Unum4));
         int index = (int)a[i];
         t[i][index] = 1;
     }

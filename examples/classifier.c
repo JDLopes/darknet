@@ -6,7 +6,7 @@
 
 Unum4 *get_regression_values(char **labels, int n)
 {
-    Unum4 *v = calloc(n, sizeof(Unum4));
+    Unum4 *v = calloc_u(n, sizeof(Unum4));
     int i;
     for(i = 0; i < n; ++i){
         char *p = strchr(labels[i], ' ');
@@ -282,7 +282,7 @@ void validate_classifier_10(char *datacfg, char *filename, char *weightfile)
         images[7] = crop_image(im, 0, 0, w, h);
         images[8] = crop_image(im, -shift, shift, w, h);
         images[9] = crop_image(im, shift, shift, w, h);
-        Unum4 *pred = calloc(classes, sizeof(Unum4));
+        Unum4 *pred = calloc_u(classes, sizeof(Unum4));
         for(j = 0; j < 10; ++j){
             Unum4 *p = network_predict(net, images[j].data);
             if(net->hierarchy) hierarchy_predictions(p, net->outputs, net->hierarchy, 1, 1);
@@ -455,7 +455,7 @@ void validate_classifier_multi(char *datacfg, char *cfg, char *weights)
                 break;
             }
         }
-        Unum4 *pred = calloc(classes, sizeof(Unum4));
+        Unum4 *pred = calloc_u(classes, sizeof(Unum4));
         image im = load_image_color(paths[i], 0, 0);
         for(j = 0; j < nscales; ++j){
             image r = resize_max(im, scales[j]);

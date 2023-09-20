@@ -18,9 +18,9 @@ layer make_l2norm_layer(int batch, int inputs)
     l.batch = batch;
     l.inputs = inputs;
     l.outputs = inputs;
-    l.output = calloc(inputs*batch, sizeof(Unum4));
-    l.scales = calloc(inputs*batch, sizeof(Unum4));
-    l.delta = calloc(inputs*batch, sizeof(Unum4));
+    l.output = calloc_u(inputs*batch, sizeof(Unum4));
+    l.scales = calloc_u(inputs*batch, sizeof(Unum4));
+    l.delta = calloc_u(inputs*batch, sizeof(Unum4));
 
     l.forward = forward_l2norm_layer;
     l.backward = backward_l2norm_layer;

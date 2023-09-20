@@ -50,9 +50,9 @@ cost_layer make_cost_layer(int batch, int inputs, COST_TYPE cost_type, Unum4 sca
     l.inputs = inputs;
     l.outputs = inputs;
     l.cost_type = cost_type;
-    l.delta = calloc(inputs*batch, sizeof(Unum4));
-    l.output = calloc(inputs*batch, sizeof(Unum4));
-    l.cost = calloc(1, sizeof(Unum4));
+    l.delta = calloc_u(inputs*batch, sizeof(Unum4));
+    l.output = calloc_u(inputs*batch, sizeof(Unum4));
+    l.cost = calloc_u(1, sizeof(Unum4));
 
     l.forward = forward_cost_layer;
     l.backward = backward_cost_layer;

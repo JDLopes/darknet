@@ -13,7 +13,7 @@ dropout_layer make_dropout_layer(int batch, int inputs, Unum4 probability)
     l.inputs = inputs;
     l.outputs = inputs;
     l.batch = batch;
-    l.rand = calloc(inputs*batch, sizeof(Unum4));
+    l.rand = calloc_u(inputs*batch, sizeof(Unum4));
     l.scale = 1./(1.-probability);
     l.forward = forward_dropout_layer;
     l.backward = backward_dropout_layer;

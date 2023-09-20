@@ -33,7 +33,7 @@ crop_layer make_crop_layer(int batch, int h, int w, int c, int crop_height, int 
     l.out_c = c;
     l.inputs = l.w * l.h * l.c;
     l.outputs = l.out_w * l.out_h * l.out_c;
-    l.output = calloc(l.outputs*batch, sizeof(Unum4));
+    l.output = calloc_u(l.outputs*batch, sizeof(Unum4));
     l.forward = forward_crop_layer;
     l.backward = backward_crop_layer;
 

@@ -41,8 +41,8 @@ layer make_reorg_layer(int batch, int w, int h, int c, int stride, int reverse, 
         fprintf(stderr, "reorg              /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n",  stride, w, h, c, l.out_w, l.out_h, l.out_c);
     }
     int output_size = l.outputs * batch;
-    l.output =  calloc(output_size, sizeof(Unum4));
-    l.delta =   calloc(output_size, sizeof(Unum4));
+    l.output =  calloc_u(output_size, sizeof(Unum4));
+    l.delta =   calloc_u(output_size, sizeof(Unum4));
 
     l.forward = forward_reorg_layer;
     l.backward = backward_reorg_layer;

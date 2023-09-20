@@ -193,11 +193,11 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.pad = padding;
     l.batch_normalize = batch_normalize;
 
-    l.weights = calloc(c/groups*n*size*size, sizeof(Unum4));
-    l.weight_updates = calloc(c/groups*n*size*size, sizeof(Unum4));
+    l.weights = calloc_u(c/groups*n*size*size, sizeof(Unum4));
+    l.weight_updates = calloc_u(c/groups*n*size*size, sizeof(Unum4));
 
-    l.biases = calloc(n, sizeof(Unum4));
-    l.bias_updates = calloc(n, sizeof(Unum4));
+    l.biases = calloc_u(n, sizeof(Unum4));
+    l.bias_updates = calloc_u(n, sizeof(Unum4));
 
     l.nweights = c/groups*n*size*size;
     l.nbiases = n;
@@ -216,47 +216,47 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.outputs = l.out_h * l.out_w * l.out_c;
     l.inputs = l.w * l.h * l.c;
 
-    l.output = calloc(l.batch*l.outputs, sizeof(Unum4));
-    l.delta  = calloc(l.batch*l.outputs, sizeof(Unum4));
+    l.output = calloc_u(l.batch*l.outputs, sizeof(Unum4));
+    l.delta  = calloc_u(l.batch*l.outputs, sizeof(Unum4));
 
     l.forward = forward_convolutional_layer;
     l.backward = backward_convolutional_layer;
     l.update = update_convolutional_layer;
     if(binary){
-        l.binary_weights = calloc(l.nweights, sizeof(Unum4));
+        l.binary_weights = calloc_u(l.nweights, sizeof(Unum4));
         l.cweights = calloc(l.nweights, sizeof(char));
-        l.scales = calloc(n, sizeof(Unum4));
+        l.scales = calloc_u(n, sizeof(Unum4));
     }
     if(xnor){
-        l.binary_weights = calloc(l.nweights, sizeof(Unum4));
-        l.binary_input = calloc(l.inputs*l.batch, sizeof(Unum4));
+        l.binary_weights = calloc_u(l.nweights, sizeof(Unum4));
+        l.binary_input = calloc_u(l.inputs*l.batch, sizeof(Unum4));
     }
 
     if(batch_normalize){
-        l.scales = calloc(n, sizeof(Unum4));
-        l.scale_updates = calloc(n, sizeof(Unum4));
+        l.scales = calloc_u(n, sizeof(Unum4));
+        l.scale_updates = calloc_u(n, sizeof(Unum4));
         for(i = 0; i < n; ++i){
             l.scales[i] = 1;
         }
 
-        l.mean = calloc(n, sizeof(Unum4));
-        l.variance = calloc(n, sizeof(Unum4));
+        l.mean = calloc_u(n, sizeof(Unum4));
+        l.variance = calloc_u(n, sizeof(Unum4));
 
-        l.mean_delta = calloc(n, sizeof(Unum4));
-        l.variance_delta = calloc(n, sizeof(Unum4));
+        l.mean_delta = calloc_u(n, sizeof(Unum4));
+        l.variance_delta = calloc_u(n, sizeof(Unum4));
 
-        l.rolling_mean = calloc(n, sizeof(Unum4));
-        l.rolling_variance = calloc(n, sizeof(Unum4));
-        l.x = calloc(l.batch*l.outputs, sizeof(Unum4));
-        l.x_norm = calloc(l.batch*l.outputs, sizeof(Unum4));
+        l.rolling_mean = calloc_u(n, sizeof(Unum4));
+        l.rolling_variance = calloc_u(n, sizeof(Unum4));
+        l.x = calloc_u(l.batch*l.outputs, sizeof(Unum4));
+        l.x_norm = calloc_u(l.batch*l.outputs, sizeof(Unum4));
     }
     if(adam){
-        l.m = calloc(l.nweights, sizeof(Unum4));
-        l.v = calloc(l.nweights, sizeof(Unum4));
-        l.bias_m = calloc(n, sizeof(Unum4));
-        l.scale_m = calloc(n, sizeof(Unum4));
-        l.bias_v = calloc(n, sizeof(Unum4));
-        l.scale_v = calloc(n, sizeof(Unum4));
+        l.m = calloc_u(l.nweights, sizeof(Unum4));
+        l.v = calloc_u(l.nweights, sizeof(Unum4));
+        l.bias_m = calloc_u(n, sizeof(Unum4));
+        l.scale_m = calloc_u(n, sizeof(Unum4));
+        l.bias_v = calloc_u(n, sizeof(Unum4));
+        l.scale_v = calloc_u(n, sizeof(Unum4));
     }
 
 #ifdef GPU

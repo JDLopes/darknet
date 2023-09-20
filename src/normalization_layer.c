@@ -17,10 +17,10 @@ layer make_normalization_layer(int batch, int w, int h, int c, int size, Unum4 a
     layer.size = size;
     layer.alpha = alpha;
     layer.beta = beta;
-    layer.output = calloc(h * w * c * batch, sizeof(Unum4));
-    layer.delta = calloc(h * w * c * batch, sizeof(Unum4));
-    layer.squared = calloc(h * w * c * batch, sizeof(Unum4));
-    layer.norms = calloc(h * w * c * batch, sizeof(Unum4));
+    layer.output = calloc_u(h * w * c * batch, sizeof(Unum4));
+    layer.delta = calloc_u(h * w * c * batch, sizeof(Unum4));
+    layer.squared = calloc_u(h * w * c * batch, sizeof(Unum4));
+    layer.norms = calloc_u(h * w * c * batch, sizeof(Unum4));
     layer.inputs = w*h*c;
     layer.outputs = layer.inputs;
 

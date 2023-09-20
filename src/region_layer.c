@@ -26,14 +26,14 @@ layer make_region_layer(int batch, int w, int h, int n, int classes, int coords)
     l.out_c = l.c;
     l.classes = classes;
     l.coords = coords;
-    l.cost = calloc(1, sizeof(Unum4));
-    l.biases = calloc(n*2, sizeof(Unum4));
-    l.bias_updates = calloc(n*2, sizeof(Unum4));
+    l.cost = calloc_u(1, sizeof(Unum4));
+    l.biases = calloc_u(n*2, sizeof(Unum4));
+    l.bias_updates = calloc_u(n*2, sizeof(Unum4));
     l.outputs = h*w*n*(classes + coords + 1);
     l.inputs = l.outputs;
     l.truths = 30*(l.coords + 1);
-    l.delta = calloc(batch*l.outputs, sizeof(Unum4));
-    l.output = calloc(batch*l.outputs, sizeof(Unum4));
+    l.delta = calloc_u(batch*l.outputs, sizeof(Unum4));
+    l.output = calloc_u(batch*l.outputs, sizeof(Unum4));
     int i;
     for(i = 0; i < n*2; ++i){
         l.biases[i] = .5;

@@ -52,7 +52,7 @@ matrix resize_matrix(matrix m, int size)
     if (m.rows < size) {
         m.vals = realloc(m.vals, size*sizeof(Unum4*));
         for (i = m.rows; i < size; ++i) {
-            m.vals[i] = calloc(m.cols, sizeof(Unum4));
+            m.vals[i] = calloc_u(m.cols, sizeof(Unum4));
         }
     } else if (m.rows > size) {
         for (i = size; i < m.rows; ++i) {
@@ -83,7 +83,7 @@ matrix copy_matrix(matrix m)
     c.vals = calloc(c.rows, sizeof(Unum4 *));
     int i;
     for(i = 0; i < c.rows; ++i){
-        c.vals[i] = calloc(c.cols, sizeof(Unum4));
+        c.vals[i] = calloc_u(c.cols, sizeof(Unum4));
         copy_cpu(c.cols, m.vals[i], 1, c.vals[i], 1);
     }
     return c;
@@ -97,7 +97,7 @@ matrix make_matrix(int rows, int cols)
     m.cols = cols;
     m.vals = calloc(m.rows, sizeof(Unum4 *));
     for(i = 0; i < m.rows; ++i){
-        m.vals[i] = calloc(m.cols, sizeof(Unum4));
+        m.vals[i] = calloc_u(m.cols, sizeof(Unum4));
     }
     return m;
 }
@@ -119,7 +119,7 @@ matrix hold_out_matrix(matrix *m, int n)
 
 Unum4 *pop_column(matrix *m, int c)
 {
-    Unum4 *col = calloc(m->rows, sizeof(Unum4));
+    Unum4 *col = calloc_u(m->rows, sizeof(Unum4));
     int i, j;
     for(i = 0; i < m->rows; ++i){
         col[i] = m->vals[i][c];

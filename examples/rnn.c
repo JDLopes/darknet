@@ -70,8 +70,8 @@ char **read_tokens(char *filename, size_t *read)
 
 Unum4_pair get_rnn_token_data(int *tokens, size_t *offsets, int characters, size_t len, int batch, int steps)
 {
-    Unum4 *x = calloc(batch * steps * characters, sizeof(Unum4));
-    Unum4 *y = calloc(batch * steps * characters, sizeof(Unum4));
+    Unum4 *x = calloc_u(batch * steps * characters, sizeof(Unum4));
+    Unum4 *y = calloc_u(batch * steps * characters, sizeof(Unum4));
     int i,j;
     for(i = 0; i < batch; ++i){
         for(j = 0; j < steps; ++j){
@@ -97,8 +97,8 @@ Unum4_pair get_rnn_token_data(int *tokens, size_t *offsets, int characters, size
 Unum4_pair get_seq2seq_data(char **source, char **dest, int n, int characters, size_t len, int batch, int steps)
 {
     int i,j;
-    Unum4 *x = calloc(batch * steps * characters, sizeof(Unum4));
-    Unum4 *y = calloc(batch * steps * characters, sizeof(Unum4));
+    Unum4 *x = calloc_u(batch * steps * characters, sizeof(Unum4));
+    Unum4 *y = calloc_u(batch * steps * characters, sizeof(Unum4));
     for(i = 0; i < batch; ++i){
         int index = rand()%n;
         //int slen = strlen(source[index]);
@@ -127,8 +127,8 @@ Unum4_pair get_seq2seq_data(char **source, char **dest, int n, int characters, s
 
 Unum4_pair get_rnn_data(unsigned char *text, size_t *offsets, int characters, size_t len, int batch, int steps)
 {
-    Unum4 *x = calloc(batch * steps * characters, sizeof(Unum4));
-    Unum4 *y = calloc(batch * steps * characters, sizeof(Unum4));
+    Unum4 *x = calloc_u(batch * steps * characters, sizeof(Unum4));
+    Unum4 *y = calloc_u(batch * steps * characters, sizeof(Unum4));
     int i,j;
     for(i = 0; i < batch; ++i){
         for(j = 0; j < steps; ++j){
@@ -262,7 +262,7 @@ void test_char_rnn(char *cfgfile, char *weightfile, int num, char *seed, Unum4 t
     for(i = 0; i < net->n; ++i) net->layers[i].temperature = temp;
     int c = 0;
     int len = strlen(seed);
-    Unum4 *input = calloc(inputs, sizeof(Unum4));
+    Unum4 *input = calloc_u(inputs, sizeof(Unum4));
 
     /*
        fill_cpu(inputs, 0, input, 1);
@@ -315,7 +315,7 @@ void test_tactic_rnn_multi(char *cfgfile, char *weightfile, int num, Unum4 temp,
     int i, j;
     for(i = 0; i < net->n; ++i) net->layers[i].temperature = temp;
     int c = 0;
-    Unum4 *input = calloc(inputs, sizeof(Unum4));
+    Unum4 *input = calloc_u(inputs, sizeof(Unum4));
     Unum4 *out = 0;
 
     while(1){
@@ -360,7 +360,7 @@ void test_tactic_rnn(char *cfgfile, char *weightfile, int num, Unum4 temp, int r
     int i, j;
     for(i = 0; i < net->n; ++i) net->layers[i].temperature = temp;
     int c = 0;
-    Unum4 *input = calloc(inputs, sizeof(Unum4));
+    Unum4 *input = calloc_u(inputs, sizeof(Unum4));
     Unum4 *out = 0;
 
     while((c = getc(stdin)) != EOF){
@@ -396,7 +396,7 @@ void valid_tactic_rnn(char *cfgfile, char *weightfile, char *seed)
     int words = 1;
     int c;
     int len = strlen(seed);
-    Unum4 *input = calloc(inputs, sizeof(Unum4));
+    Unum4 *input = calloc_u(inputs, sizeof(Unum4));
     int i;
     for(i = 0; i < len; ++i){
         c = seed[i];
@@ -445,7 +445,7 @@ void valid_char_rnn(char *cfgfile, char *weightfile, char *seed)
     int words = 1;
     int c;
     int len = strlen(seed);
-    Unum4 *input = calloc(inputs, sizeof(Unum4));
+    Unum4 *input = calloc_u(inputs, sizeof(Unum4));
     int i;
     for(i = 0; i < len; ++i){
         c = seed[i];
@@ -481,7 +481,7 @@ void vec_char_rnn(char *cfgfile, char *weightfile, char *seed)
 
     int c;
     int seed_len = strlen(seed);
-    Unum4 *input = calloc(inputs, sizeof(Unum4));
+    Unum4 *input = calloc_u(inputs, sizeof(Unum4));
     int i;
     char *line;
     while((line=fgetl(stdin)) != 0){

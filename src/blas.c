@@ -32,7 +32,7 @@ void reorg_cpu(Unum4 *x, int w, int h, int c, int batch, int stride, int forward
 
 void flatten(Unum4 *x, int size, int layers, int batch, int forward)
 {
-    Unum4 *swap = calloc(size*layers*batch, sizeof(Unum4));
+    Unum4 *swap = calloc_u(size*layers*batch, sizeof(Unum4));
     int i,c,b;
     for(b = 0; b < batch; ++b){
         for(c = 0; c < layers; ++c){

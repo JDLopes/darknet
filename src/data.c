@@ -934,7 +934,7 @@ data load_data_compare(int n, char **paths, int m, int classes, int w, int h)
         image im1 = load_image_color(paths[i*2],   w, h);
         image im2 = load_image_color(paths[i*2+1], w, h);
 
-        d.X.vals[i] = calloc(d.X.cols, sizeof(Unum4));
+        d.X.vals[i] = calloc_u(d.X.cols, sizeof(Unum4));
         memcpy(d.X.vals[i],         im1.data, h*w*3*sizeof(Unum4));
         memcpy(d.X.vals[i] + h*w*3, im2.data, h*w*3*sizeof(Unum4));
 

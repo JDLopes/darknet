@@ -13,25 +13,25 @@ layer make_batchnorm_layer(int batch, int w, int h, int c)
     l.h = l.out_h = h;
     l.w = l.out_w = w;
     l.c = l.out_c = c;
-    l.output = calloc(h * w * c * batch, sizeof(Unum4));
-    l.delta  = calloc(h * w * c * batch, sizeof(Unum4));
+    l.output = calloc_u(h * w * c * batch, sizeof(Unum4));
+    l.delta  = calloc_u(h * w * c * batch, sizeof(Unum4));
     l.inputs = w*h*c;
     l.outputs = l.inputs;
 
-    l.scales = calloc(c, sizeof(Unum4));
-    l.scale_updates = calloc(c, sizeof(Unum4));
-    l.biases = calloc(c, sizeof(Unum4));
-    l.bias_updates = calloc(c, sizeof(Unum4));
+    l.scales = calloc_u(c, sizeof(Unum4));
+    l.scale_updates = calloc_u(c, sizeof(Unum4));
+    l.biases = calloc_u(c, sizeof(Unum4));
+    l.bias_updates = calloc_u(c, sizeof(Unum4));
     int i;
     for(i = 0; i < c; ++i){
         l.scales[i] = 1;
     }
 
-    l.mean = calloc(c, sizeof(Unum4));
-    l.variance = calloc(c, sizeof(Unum4));
+    l.mean = calloc_u(c, sizeof(Unum4));
+    l.variance = calloc_u(c, sizeof(Unum4));
 
-    l.rolling_mean = calloc(c, sizeof(Unum4));
-    l.rolling_variance = calloc(c, sizeof(Unum4));
+    l.rolling_mean = calloc_u(c, sizeof(Unum4));
+    l.rolling_variance = calloc_u(c, sizeof(Unum4));
 
     l.forward = forward_batchnorm_layer;
     l.backward = backward_batchnorm_layer;

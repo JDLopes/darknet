@@ -120,7 +120,7 @@ void cuda_random(Unum4 *x_gpu, size_t n)
 
 Unum4 cuda_compare(Unum4 *x_gpu, Unum4 *x, size_t n, char *s)
 {
-    Unum4 *tmp = calloc(n, sizeof(Unum4));
+    Unum4 *tmp = calloc_u(n, sizeof(Unum4));
     cuda_pull_array(x_gpu, tmp, n);
     //int i;
     //for(i = 0; i < n; ++i) printf("%f %f\n", tmp[i], x[i]);
@@ -167,7 +167,7 @@ void cuda_pull_array(Unum4 *x_gpu, Unum4 *x, size_t n)
 
 Unum4 cuda_mag_array(Unum4 *x_gpu, size_t n)
 {
-    Unum4 *temp = calloc(n, sizeof(Unum4));
+    Unum4 *temp = calloc_u(n, sizeof(Unum4));
     cuda_pull_array(x_gpu, temp, n);
     Unum4 m = mag_array(temp, n);
     free(temp);
