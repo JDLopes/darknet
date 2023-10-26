@@ -20,6 +20,8 @@ EXEC=darknet
 OBJDIR=./obj/
 
 UNUM4_DIR:=./submodules/UNUM4
+UNUM4_SW_DIR=$(UNUM4_DIR)/software
+UNUM4_PYTHON_DIR=$(UNUM4_SW_DIR)/python
 UNUM4_TRG:=unum4
 
 CC=g++
@@ -77,7 +79,7 @@ all: obj backup results $(SLIB) $(ALIB) $(EXEC)
 #all: obj  results $(SLIB) $(ALIB) $(EXEC)
 
 
-$(EXEC): $(EXECOBJ) $(ALIB) $(UNUM4_DIR)/software/pc/$(UNUM4_TRG).a
+$(EXEC): $(EXECOBJ) $(ALIB) $(UNUM4_SW_DIR)/pc/$(UNUM4_TRG).a
 	$(CC) $(COMMON) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(ALIB)
 
 $(ALIB): $(OBJS)
@@ -106,13 +108,15 @@ ifneq ($(findstring test-unum, $(MAKECMDGOALS)),)
 TEST_UNUM4=1
 endif
 
-include $(UNUM4_DIR)/software/pc/unum4.mk
+include $(UNUM4_SW_DIR)/pc/unum4.mk
 COMMON+=$(INCLUDE)
 
 test-unum: clean-unum $(UNUM4_TRG)
-	./$(UNUM4_TRG)
+	./$(UNUM4_TRG) -d ./$@-double.out -f ./$@-float.out -u ./$@-unum.out
+	$(UNUM4_PYTHON_DIR)/floatVSunum -d ./$@-double.out -f ./$@-float.out -o ./float-floatVSunum.out -p 16
+	$(UNUM4_PYTHON_DIR)/floatVSunum -d ./$@-double.out -u ./$@-unum.out -o ./unum-floatVSunum.out -p 16
 
-$(UNUM4_TRG): $(UNUM4_DIR)/software/pc/$(UNUM4_TRG).a
+$(UNUM4_TRG): $(UNUM4_SW_DIR)/pc/$(UNUM4_TRG).a
 	$(CPP) $^ -o $@
 
 clean: clean-unum
