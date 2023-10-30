@@ -421,6 +421,35 @@ struct layer{
 #endif
 };
 
+inline void init_layer(layer *l) {
+  l->smooth = 0;
+  l->dot = 0;
+  l->angle = 0;
+  l->jitter = 0;
+  l->saturation = 0;
+  l->exposure = 0;
+  l->shift = 0;
+  l->ratio = 0;
+  l->learning_rate_scale = 0;
+  l->clip = 0;
+  l->alpha = 0;
+  l->beta = 0;
+  l->kappa = 0;
+  l->coord_scale = 0;
+  l->object_scale = 0;
+  l->noobject_scale = 0;
+  l->mask_scale = 0;
+  l->class_scale = 0;
+  l->ignore_thresh = 0;
+  l->truth_thresh = 0;
+  l->thresh = 0;
+  l->focus = 0;
+  l->temperature = 0;
+  l->probability = 0;
+  l->scale = 0;
+  return;
+}
+
 void free_layer(layer);
 
 typedef enum {
@@ -495,6 +524,28 @@ typedef struct network{
 
 } network;
 
+inline void init_network(network *net) {
+  net->epoch = 0;
+  net->learning_rate = 0;
+  net->momentum = 0;
+  net->decay = 0;
+  net->gamma = 0;
+  net->scale = 0;
+  net->power = 0;
+  net->B1 = 0;
+  net->B2 = 0;
+  net->eps = 0;
+  net->max_ratio = 0;
+  net->min_ratio = 0;
+  net->angle = 0;
+  net->aspect = 0;
+  net->exposure = 0;
+  net->saturation = 0;
+  net->hue = 0;
+  net->clip = 0;
+  return;
+}
+
 typedef struct {
     int w;
     int h;
@@ -516,6 +567,14 @@ typedef struct{
     Unum4 x, y, w, h;
 } box;
 
+inline void init_box(box *b) {
+  b->x = 0;
+  b->y = 0;
+  b->w = 0;
+  b->h = 0;
+  return;
+}
+
 typedef struct detection{
     box bbox;
     int classes;
@@ -524,6 +583,12 @@ typedef struct detection{
     Unum4 objectness;
     int sort_class;
 } detection;
+
+inline void init_detection(detection *d) {
+  d->objectness = 0;
+  init_box(&d->bbox);
+  return;
+}
 
 typedef struct matrix{
     int rows, cols;
@@ -577,11 +642,33 @@ typedef struct load_args{
     tree *hierarchy;
 } load_args;
 
+inline void init_load_args(load_args *args) {
+  args->jitter = 0;
+  args->angle = 0;
+  args->aspect = 0;
+  args->saturation = 0;
+  args->exposure = 0;
+  args->hue = 0;
+  return;
+}
+
 typedef struct{
     int id;
     Unum4 x,y,w,h;
     Unum4 left, right, top, bottom;
 } box_label;
+
+inline void init_box_label(box_label *b) {
+  b->x = 0;
+  b->y = 0;
+  b->w = 0;
+  b->h = 0;
+  b->left = 0;
+  b->right = 0;
+  b->top = 0;
+  b->bottom = 0;
+  return;
+}
 
 
 network *load_network(char *cfg, char *weights, int clear);

@@ -880,10 +880,10 @@ network *parse_network_cfg(char *filename)
         if(gpu_index >= 0){
             net->workspace = cuda_make_array(0, (workspace_size-1)/sizeof(Unum4)+1);
         }else {
-            net->workspace = calloc(1, workspace_size);
+            net->workspace = calloc_u(1, workspace_size);
         }
 #else
-        net->workspace = calloc(1, workspace_size);
+        net->workspace = calloc_u(1, workspace_size);
 #endif
     }
     return net;
@@ -1098,17 +1098,34 @@ void transpose_matrix(Unum4 *a, int rows, int cols)
 
 void load_connected_weights(layer l, FILE *fp, int transpose)
 {
+#ifdef LD_FP_WEIGHTS
+    float *data_fp = malloc(l.outputs*l.inputs*sizeof(float));
+    fread(data_fp, sizeof(Unum4), l.outputs, fp);
+    memcpy(l.biases, data_fp, sizeof(float)*l.outputs);
+    fread(data_fp, sizeof(Unum4), l.outputs*l.inputs, fp);
+    memcpy(l.weights, data_fp, sizeof(float)*l.outputs*l.inputs);
+#else
     fread(l.biases, sizeof(Unum4), l.outputs, fp);
     fread(l.weights, sizeof(Unum4), l.outputs*l.inputs, fp);
+#endif
     if(transpose){
         transpose_matrix(l.weights, l.inputs, l.outputs);
     }
     //printf("Biases: %f mean %f variance\n", mean_array(l.biases, l.outputs), variance_array(l.biases, l.outputs));
     //printf("Weights: %f mean %f variance\n", mean_array(l.weights, l.outputs*l.inputs), variance_array(l.weights, l.outputs*l.inputs));
     if (l.batch_normalize && (!l.dontloadscales)){
+#ifdef LD_FP_WEIGHTS
+        fread(data_fp, sizeof(Unum4), l.outputs, fp);
+        memcpy(l.scales, data_fp, sizeof(float)*l.outputs);
+        fread(data_fp, sizeof(Unum4), l.outputs, fp);
+        memcpy(l.rolling_mean, data_fp, sizeof(float)*l.outputs);
+        fread(data_fp, sizeof(Unum4), l.outputs, fp);
+        memcpy(l.rolling_variance, data_fp, sizeof(float)*l.outputs);
+#else
         fread(l.scales, sizeof(Unum4), l.outputs, fp);
         fread(l.rolling_mean, sizeof(Unum4), l.outputs, fp);
         fread(l.rolling_variance, sizeof(Unum4), l.outputs, fp);
+#endif
         //printf("Scales: %f mean %f variance\n", mean_array(l.scales, l.outputs), variance_array(l.scales, l.outputs));
         //printf("rolling_mean: %f mean %f variance\n", mean_array(l.rolling_mean, l.outputs), variance_array(l.rolling_mean, l.outputs));
         //printf("rolling_variance: %f mean %f variance\n", mean_array(l.rolling_variance, l.outputs), variance_array(l.rolling_variance, l.outputs));
@@ -1118,17 +1135,33 @@ void load_connected_weights(layer l, FILE *fp, int transpose)
         push_connected_layer(l);
     }
 #endif
+#ifdef LD_FP_WEIGHTS
+    free(data_fp);
+#endif
 }
 
 void load_batchnorm_weights(layer l, FILE *fp)
 {
+#ifdef LD_FP_WEIGHTS
+    float *data_fp = malloc(l.c*sizeof(float));
+    fread(data_fp, sizeof(Unum4), l.c, fp);
+    memcpy(l.scales, data_fp, sizeof(float)*l.c);
+    fread(data_fp, sizeof(Unum4), l.c, fp);
+    memcpy(l.rolling_mean, data_fp, sizeof(float)*l.c);
+    fread(data_fp, sizeof(Unum4), l.c, fp);
+    memcpy(l.rolling_variance, data_fp, sizeof(float)*l.c);
+#else
     fread(l.scales, sizeof(Unum4), l.c, fp);
     fread(l.rolling_mean, sizeof(Unum4), l.c, fp);
     fread(l.rolling_variance, sizeof(Unum4), l.c, fp);
+#endif
 #ifdef GPU
     if(gpu_index >= 0){
         push_batchnorm_layer(l);
     }
+#endif
+#ifdef LD_FP_WEIGHTS
+    free(data_fp);
 #endif
 }
 
@@ -1170,11 +1203,27 @@ void load_convolutional_weights(layer l, FILE *fp)
     }
     if(l.numload) l.n = l.numload;
     int num = l.c/l.groups*l.n*l.size*l.size;
+#ifdef LD_FP_WEIGHTS
+    int max = (num > l.n)? num: l.n;
+    float *data_fp = malloc(max*sizeof(float));
+    fread(data_fp, sizeof(Unum4), l.n, fp);
+    memcpy(l.biases, data_fp, sizeof(float)*l.n);
+#else
     fread(l.biases, sizeof(Unum4), l.n, fp);
+#endif
     if (l.batch_normalize && (!l.dontloadscales)){
+#ifdef LD_FP_WEIGHTS
+        fread(data_fp, sizeof(Unum4), l.n, fp);
+        memcpy(l.scales, data_fp, sizeof(float)*l.n);
+        fread(data_fp, sizeof(Unum4), l.n, fp);
+        memcpy(l.rolling_mean, data_fp, sizeof(float)*l.n);
+        fread(data_fp, sizeof(Unum4), l.n, fp);
+        memcpy(l.rolling_variance, data_fp, sizeof(float)*l.n);
+#else
         fread(l.scales, sizeof(Unum4), l.n, fp);
         fread(l.rolling_mean, sizeof(Unum4), l.n, fp);
         fread(l.rolling_variance, sizeof(Unum4), l.n, fp);
+#endif
         if(0){
             int i;
             for(i = 0; i < l.n; ++i){
@@ -1202,7 +1251,12 @@ void load_convolutional_weights(layer l, FILE *fp)
             printf("\n");
         }
     }
+#ifdef LD_FP_WEIGHTS
+    fread(data_fp, sizeof(Unum4), num, fp);
+    memcpy(l.weights, data_fp, sizeof(float)*num);
+#else
     fread(l.weights, sizeof(Unum4), num, fp);
+#endif
     //if(l.c == 3) scal_cpu(num, 1./256, l.weights, 1);
     if (l.flipped) {
         transpose_matrix(l.weights, l.c*l.size*l.size, l.n);
@@ -1212,6 +1266,9 @@ void load_convolutional_weights(layer l, FILE *fp)
     if(gpu_index >= 0){
         push_convolutional_layer(l);
     }
+#endif
+#ifdef LD_FP_WEIGHTS
+    free(data_fp);
 #endif
 }
 
@@ -1293,8 +1350,18 @@ void load_weights_upto(network *net, char *filename, int start, int cutoff)
         if(l.type == LOCAL){
             int locations = l.out_w*l.out_h;
             int size = l.size*l.size*l.c*l.n*locations;
+#ifdef LD_FP_WEIGHTS
+            int max = (size > l.outputs)? size: l.outputs;
+            float *data_fp = malloc(max*sizeof(float));
+            fread(data_fp, sizeof(Unum4), l.outputs, fp);
+            memcpy(l.biases, data_fp, sizeof(float)*l.outputs);
+            fread(data_fp, sizeof(Unum4), size, fp);
+            memcpy(l.weights, data_fp, sizeof(float)*size);
+            free(data_fp);
+#else
             fread(l.biases, sizeof(Unum4), l.outputs, fp);
             fread(l.weights, sizeof(Unum4), size, fp);
+#endif
 #ifdef GPU
             if(gpu_index >= 0){
                 push_local_layer(l);

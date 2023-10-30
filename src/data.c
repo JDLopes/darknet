@@ -146,6 +146,9 @@ box_label *read_boxes(char *filename, int *n)
     int count = 0;
     int size = 64;
     box_label *boxes = calloc(size, sizeof(box_label));
+    for (int i = 0; i < size; i++) {
+        init_box_label(&boxes[i]);
+    }
     while(fscanf(file, "%d %f %f %f %f", &id, &x, &y, &w, &h) == 5){
         if(count == size) {
             size = size * 2;

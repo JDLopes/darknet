@@ -178,8 +178,12 @@ char *get_layer_string(LAYER_TYPE a)
 network *make_network(int n)
 {
     network *net = calloc(1, sizeof(network));
+    init_network(net);
     net->n = n;
     net->layers = calloc(net->n, sizeof(layer));
+    for (int i = 0; i < n; i++) {
+        init_layer(&net->layers[i]);
+    }
     net->seen = calloc(1, sizeof(size_t));
     net->t    = calloc(1, sizeof(int));
     net->cost = calloc_u(1, sizeof(Unum4));
@@ -428,11 +432,11 @@ int resize_network(network *net, int w, int h)
         }
     }else {
         free(net->workspace);
-        net->workspace = calloc(1, workspace_size);
+        net->workspace = calloc_u(1, workspace_size);
     }
 #else
     free(net->workspace);
-    net->workspace = calloc(1, workspace_size);
+    net->workspace = calloc_u(1, workspace_size);
 #endif
     //fprintf(stderr, " Done!\n");
     return 0;
@@ -532,6 +536,7 @@ detection *make_network_boxes(network *net, Unum4 thresh, int *num)
     if(num) *num = nboxes;
     detection *dets = calloc(nboxes, sizeof(detection));
     for(i = 0; i < nboxes; ++i){
+        init_detection(&dets[i]);
         dets[i].prob = calloc_u(l.classes, sizeof(Unum4));
         if(l.coords > 4){
             dets[i].mask = calloc_u(l.coords-4, sizeof(Unum4));

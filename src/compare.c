@@ -155,6 +155,12 @@ typedef struct {
     Unum4 *elos;
 } sortable_bbox;
 
+inline void init_sortable_bbox(sortable_bbox *b) {
+  b->elo = 0;
+  init_network(&b->net);
+  return;
+}
+
 int total_compares = 0;
 int current_class = 0;
 
@@ -241,6 +247,9 @@ void SortMaster3000(char *filename, char *weightfile)
     int N = plist->size;
     free_list(plist);
     sortable_bbox *boxes = calloc(N, sizeof(sortable_bbox));
+    for (i = 0; i < N; i++) {
+        init_sortable_bbox(&boxes[i]);
+    }
     printf("Sorting %d boxes...\n", N);
     for(i = 0; i < N; ++i){
         boxes[i].filename = paths[i];
@@ -278,6 +287,7 @@ void BattleRoyaleWithCheese(char *filename, char *weightfile)
     sortable_bbox *boxes = calloc(N, sizeof(sortable_bbox));
     printf("Battling %d boxes...\n", N);
     for(i = 0; i < N; ++i){
+        init_sortable_bbox(&boxes[i]);
         boxes[i].filename = paths[i];
         boxes[i].net = net;
         boxes[i].classes = classes;

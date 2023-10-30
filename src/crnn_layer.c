@@ -45,7 +45,7 @@ layer make_crnn_layer(int batch, int h, int w, int c, int hidden_filters, int ou
     l.hidden = h * w * hidden_filters;
     l.outputs = l.out_h * l.out_w * l.out_c;
 
-    l.state = calloc(l.hidden*batch*(steps+1), sizeof(Unum4));
+    l.state = calloc_u(l.hidden*batch*(steps+1), sizeof(Unum4));
 
     l.input_layer = malloc(sizeof(layer));
     fprintf(stderr, "\t\t");

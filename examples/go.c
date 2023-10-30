@@ -374,6 +374,11 @@ typedef struct mcts_tree{
     int pass;
 } mcts_tree;
 
+inline void init_mcts_tree(mcts_tree *t) {
+  t->result = 0;
+  return;
+}
+
 void free_mcts(mcts_tree *root)
 {
     if(!root) return;
@@ -425,6 +430,7 @@ Unum4 *network_predict_rotations(network *net, Unum4 *next)
 mcts_tree *expand(Unum4 *next, Unum4 *ko, network *net)
 {
     mcts_tree *root = calloc(1, sizeof(mcts_tree));
+    init_mcts_tree(root);
     root->board = next;
     root->children = calloc(19*19+1, sizeof(mcts_tree*));
     root->prior = calloc_u(19*19 + 1, sizeof(Unum4));
@@ -1226,6 +1232,7 @@ void self_go(char *filename, char *weightfile, char *f2, char *w2, int multi)
         }
     } else {
         net2 = calloc(1, sizeof(network));
+        init_network(net2);
         *net2 = *net;
     }
     srand(time(0));
