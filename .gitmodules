@@ -1,0 +1,3 @@
+[submodule "submodules/PTFLOAT3"]
+	path = submodules/PTFLOAT3
+	url = git@github.com:JDLopes/pt-float-3.git
