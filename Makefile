@@ -11,7 +11,7 @@ ARCH= -gencode arch=compute_30,code=sm_30 \
 #      -gencode arch=compute_20,code=[sm_20,sm_21] \ This one is deprecated?
 
 # This is what I use, uncomment if you know your arch and want to specify
-# ARCH= -gencode arch=compute_52,code=compute_52
+ARCH= -gencode arch=compute_75,code=sm_75
 
 VPATH=./src/:./examples
 SLIB=libdarknet.so
@@ -19,7 +19,11 @@ ALIB=libdarknet.a
 EXEC=darknet
 OBJDIR=./obj/
 
-CC=gcc
+LIB=ptfloat3
+LIB_UC=$(shell echo $(LIB) | tr a-z A-Z)
+LIB_DIR=submodules/$(LIB_UC)/software/pc
+
+CC=g++
 CPP=g++
 NVCC=nvcc 
 AR=ar
@@ -27,7 +31,12 @@ ARFLAGS=rcs
 OPTS=-Ofast
 LDFLAGS= -lm -pthread 
 COMMON= -Iinclude/ -Isrc/
-CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
+#CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
+CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -fpermissive -w -fPIC
+
+COMMON+=-I$(LIB_DIR)
+COMMON+=-I$(LIB_DIR)/..
+COMMON+=-I$(LIB_DIR)/../ieee754
 
 ifeq ($(OPENMP), 1) 
 CFLAGS+= -fopenmp
@@ -73,8 +82,11 @@ all: obj backup results $(SLIB) $(ALIB) $(EXEC)
 #all: obj  results $(SLIB) $(ALIB) $(EXEC)
 
 
-$(EXEC): $(EXECOBJ) $(ALIB)
+$(EXEC): $(EXECOBJ) $(ALIB) $(LIB_DIR)/$(LIB).a
 	$(CC) $(COMMON) $(CFLAGS) $^ -o $@ $(LDFLAGS) $(ALIB)
+
+$(LIB_DIR)/$(LIB).a:
+	make -C $(LIB_DIR) $(LIB).a
 
 $(ALIB): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $^
