@@ -149,6 +149,7 @@ void gemm_tt(int M, int N, int K, float ALPHA,
     }
 }
 
+Ptfloat3 C_ptf3[1024*1024];
 
 void gemm_cpu(int TA, int TB, int M, int N, int K, float ALPHA, 
         float *A, int lda, 
@@ -157,7 +158,6 @@ void gemm_cpu(int TA, int TB, int M, int N, int K, float ALPHA,
         float *C, int ldc)
 {
     //printf("cpu: %d %d %d %d %d %f %d %d %f %d\n",TA, TB, M, N, K, ALPHA, lda, ldb, BETA, ldc);
-    Ptfloat3 *C_ptf3 = (Ptfloat3 *)malloc(M*N*sizeof(Ptfloat3));
     int i, j;
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
@@ -178,7 +178,6 @@ void gemm_cpu(int TA, int TB, int M, int N, int K, float ALPHA,
             C[i*ldc + j] = (float)C_ptf3[i*ldc + j];
         }
     }
-    free(C_ptf3);
 }
 
 #ifdef GPU
