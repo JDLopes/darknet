@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "ptfloat3.h"
+
 void gemm_bin(int M, int N, int K, float ALPHA, 
         char  *A, int lda, 
         float *B, int ldb,
@@ -74,13 +76,14 @@ void gemm(int TA, int TB, int M, int N, int K, float ALPHA,
 void gemm_nn(int M, int N, int K, float ALPHA, 
         float *A, int lda, 
         float *B, int ldb,
-        float *C, int ldc)
+        Ptfloat3 *C, int ldc)
 {
     int i,j,k;
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(k = 0; k < K; ++k){
-            register float A_PART = ALPHA*A[i*lda+k];
+            //register float A_PART = ALPHA*A[i*lda+k];
+            Ptfloat3 A_PART = (Ptfloat3)ALPHA*A[i*lda+k];
             for(j = 0; j < N; ++j){
                 C[i*ldc+j] += A_PART*B[k*ldb+j];
             }
@@ -91,15 +94,17 @@ void gemm_nn(int M, int N, int K, float ALPHA,
 void gemm_nt(int M, int N, int K, float ALPHA, 
         float *A, int lda, 
         float *B, int ldb,
-        float *C, int ldc)
+        Ptfloat3 *C, int ldc)
 {
     int i,j,k;
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
-            register float sum = 0;
+            //register float sum = 0;
+            Ptfloat3 sum = 0;
             for(k = 0; k < K; ++k){
-                sum += ALPHA*A[i*lda+k]*B[j*ldb + k];
+                //sum += ALPHA*A[i*lda+k]*B[j*ldb + k];
+                sum += (Ptfloat3)ALPHA*(Ptfloat3)A[i*lda+k]*(Ptfloat3)B[j*ldb + k];
             }
             C[i*ldc+j] += sum;
         }
@@ -109,13 +114,14 @@ void gemm_nt(int M, int N, int K, float ALPHA,
 void gemm_tn(int M, int N, int K, float ALPHA, 
         float *A, int lda, 
         float *B, int ldb,
-        float *C, int ldc)
+        Ptfloat3 *C, int ldc)
 {
     int i,j,k;
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(k = 0; k < K; ++k){
-            register float A_PART = ALPHA*A[k*lda+i];
+            //register float A_PART = ALPHA*A[k*lda+i];
+            Ptfloat3 A_PART = ALPHA*A[k*lda+i];
             for(j = 0; j < N; ++j){
                 C[i*ldc+j] += A_PART*B[k*ldb+j];
             }
@@ -126,15 +132,17 @@ void gemm_tn(int M, int N, int K, float ALPHA,
 void gemm_tt(int M, int N, int K, float ALPHA, 
         float *A, int lda, 
         float *B, int ldb,
-        float *C, int ldc)
+        Ptfloat3 *C, int ldc)
 {
     int i,j,k;
     #pragma omp parallel for
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
-            register float sum = 0;
+            //register float sum = 0;
+            Ptfloat3 sum = 0;
             for(k = 0; k < K; ++k){
-                sum += ALPHA*A[i+k*lda]*B[k+j*ldb];
+                //sum += ALPHA*A[i+k*lda]*B[k+j*ldb];
+                sum += (Ptfloat3)ALPHA*(Ptfloat3)A[i+k*lda]*(Ptfloat3)B[k+j*ldb];
             }
             C[i*ldc+j] += sum;
         }
@@ -149,20 +157,28 @@ void gemm_cpu(int TA, int TB, int M, int N, int K, float ALPHA,
         float *C, int ldc)
 {
     //printf("cpu: %d %d %d %d %d %f %d %d %f %d\n",TA, TB, M, N, K, ALPHA, lda, ldb, BETA, ldc);
+    Ptfloat3 *C_ptf3 = (Ptfloat3 *)malloc(M*N*sizeof(Ptfloat3));
     int i, j;
     for(i = 0; i < M; ++i){
         for(j = 0; j < N; ++j){
-            C[i*ldc + j] *= BETA;
+            //C[i*ldc + j] *= BETA;
+            C_ptf3[i*ldc + j] = (Ptfloat3)C[i*ldc + j]*(Ptfloat3)BETA;
         }
     }
     if(!TA && !TB)
-        gemm_nn(M, N, K, ALPHA,A,lda, B, ldb,C,ldc);
+        gemm_nn(M, N, K, ALPHA,A,lda, B, ldb,C_ptf3,ldc);
     else if(TA && !TB)
-        gemm_tn(M, N, K, ALPHA,A,lda, B, ldb,C,ldc);
+        gemm_tn(M, N, K, ALPHA,A,lda, B, ldb,C_ptf3,ldc);
     else if(!TA && TB)
-        gemm_nt(M, N, K, ALPHA,A,lda, B, ldb,C,ldc);
+        gemm_nt(M, N, K, ALPHA,A,lda, B, ldb,C_ptf3,ldc);
     else
-        gemm_tt(M, N, K, ALPHA,A,lda, B, ldb,C,ldc);
+        gemm_tt(M, N, K, ALPHA,A,lda, B, ldb,C_ptf3,ldc);
+    for(i = 0; i < M; ++i){
+        for(j = 0; j < N; ++j){
+            C[i*ldc + j] = (float)C_ptf3[i*ldc + j];
+        }
+    }
+    free(C_ptf3);
 }
 
 #ifdef GPU
